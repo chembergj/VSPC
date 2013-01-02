@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VisualState xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ShowCheckBoxes="false">
+  <TopNode>[0-1000]C:\Users\Claus\Documents\Visual Studio 2010\Projects\VSPC\VSPC.nunit</TopNode>
+  <SelectedNode>[0-1011]C:\Users\Claus\Documents\Visual Studio 2010\Projects\VSPC\VSPC.FSD.Test\bin\x86\Debug\VSPC.FSD.Test.dll</SelectedNode>
+  <ExcludeCategories>false</ExcludeCategories>
+  <Nodes>
+    <Node UniqueName="[0-1000]C:\Users\Claus\Documents\Visual Studio 2010\Projects\VSPC\VSPC.nunit" Expanded="true" />
+    <Node UniqueName="[0-1005]C:\Users\Claus\Documents\Visual Studio 2010\Projects\VSPC\VSPC.Core.Test\bin\x86\Debug\VSPC.Core.Test.dll" Expanded="true" />
+    <Node UniqueName="[0-1006]VSPC" Expanded="true" />
+    <Node UniqueName="[0-1007]VSPC.Core" Expanded="true" />
+    <Node UniqueName="[0-1008]VSPC.Core.Test" Expanded="true" />
+    <Node UniqueName="[0-1001]VSPC.Core.Test.MessageBrokerTestFixture" Expanded="true" />
+    <Node UniqueName="[0-1011]C:\Users\Claus\Documents\Visual Studio 2010\Projects\VSPC\VSPC.FSD.Test\bin\x86\Debug\VSPC.FSD.Test.dll" Expanded="true" />
+    <Node UniqueName="[0-1012]VSPC" Expanded="true" />
+    <Node UniqueName="[0-1013]VSPC.FSD" Expanded="true" />
+    <Node UniqueName="[0-1014]VSPC.FSD.Test" Expanded="true" />
+    <Node UniqueName="[0-1009]VSPC.FSD.Test.TestPitchHeadingBank" Expanded="true" />
+  </Nodes>
+</VisualState>

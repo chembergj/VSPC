@@ -1,0 +1,8 @@
+﻿<NUnitProject>
+  <Settings activeconfig="Debug" />
+  <Config name="Debug" binpathtype="Auto">
+    <assembly path="VSPC.Core.Test\bin\x86\Debug\VSPC.Core.Test.dll" />
+    <assembly path="VSPC.FSD.Test\bin\x86\Debug\VSPC.FSD.Test.dll" />
+  </Config>
+  <Config name="Release" binpathtype="Auto" />
+</NUnitProject>
