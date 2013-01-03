@@ -19,6 +19,8 @@ namespace VSPC.Core.Messages
         public double Heading { get; set; }
         public bool OnGround { get; set; }
 		public short Transponder { get; set; }
+        public bool SquawkingCharlie { get; set; }
+        public bool Identing { get; set; }
 
 
         public override string ToString()

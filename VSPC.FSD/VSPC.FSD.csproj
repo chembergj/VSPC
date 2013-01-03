@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{0850F789-0671-4C7A-BF77-99197DAC1979}</ProjectGuid>
+    <ProjectGuid>{5E40140E-B0ED-4975-9EF4-E21C3AB177A4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>VSPC.Core</RootNamespace>
-    <AssemblyName>VSPC.Core</AssemblyName>
+    <RootNamespace>VSPC.FSD</RootNamespace>
+    <AssemblyName>VSPC.FSD</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -38,7 +38,8 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
@@ -48,10 +49,15 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Metacraft.Vatsim.Network">
+      <HintPath>..\..\Vatsim\Metacraft.Vatsim.Network\bin\Debug\Metacraft.Vatsim.Network.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -60,33 +66,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IVSPCLogConsumer.cs" />
-    <Compile Include="IVSPCModule.cs" />
-    <Compile Include="MessageBroker.cs" />
-    <Compile Include="MessageHandlers\AVSPCMessageHandler.cs" />
-    <Compile Include="MessageHandlers\IVSPCMessageHandler.cs" />
-    <Compile Include="Messages\FLSIM\SimCommErrorMessage.cs" />
-    <Compile Include="Messages\FLSIM\FlightsimDisconnectedMessage.cs" />
-    <Compile Include="Messages\FLSIM\FlightsimConnectedMessage.cs" />
-    <Compile Include="Messages\FSD\AFSDMessage.cs" />
-    <Compile Include="Messages\FSD\CommErrorMessage.cs" />
-    <Compile Include="Messages\FSD\ATCPositionMessage.cs" />
-    <Compile Include="Messages\FSD\TextMessageReceive.cs" />
-    <Compile Include="Messages\FSD\ErrorMessage.cs" />
-    <Compile Include="Messages\FSD\FSDConnectedMessage.cs" />
-    <Compile Include="Messages\FSD\FSDDisconnectedMessage.cs" />
-    <Compile Include="Messages\FSD\TextMessageSend.cs" />
-    <Compile Include="Messages\WindDeltaMessage.cs" />
-    <Compile Include="Messages\FSD\ATextMessage.cs" />
-    <Compile Include="Messages\UI\UserClickedLogoffMessage.cs" />
-    <Compile Include="Messages\UI\LoggedOffMessage.cs" />
-    <Compile Include="Messages\TrfPositionReportMessage.cs" />
-    <Compile Include="Messages\UI\LoggedInMessage.cs" />
-    <Compile Include="Messages\FLSIM\PositionReportMessage.cs" />
-    <Compile Include="Messages\AMessage.cs" />
-    <Compile Include="Messages\UI\UserClickedLoginMessage.cs" />
+    <Compile Include="FSDModule.cs" />
+    <Compile Include="VSPCMessageHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VSPCContext.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VSPC.Core\VSPC.Core.csproj">
+      <Project>{0850F789-0671-4C7A-BF77-99197DAC1979}</Project>
+      <Name>VSPC.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

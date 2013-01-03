@@ -7,6 +7,7 @@ using System.Reflection;
 using VSPC.Core;
 using VSPC.Loader.Config;
 using System.Windows.Interop;
+using System.Windows.Threading;
 
 namespace VSPC.Loader
 {
@@ -51,6 +52,7 @@ namespace VSPC.Loader
                     if (typeof(IVSPCModule).IsAssignableFrom(type))
                     {
                         IVSPCModule module = (IVSPCModule)Activator.CreateInstance(type);
+                        
                         module.OnModuleLoad(messageBroker);
 
                         if (typeof(IVSPCLogConsumer).IsAssignableFrom(type))

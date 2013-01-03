@@ -2,3 +2,8 @@ VSPCMessageHandler.Connect: SendAddPlane's sidste 3 args
 FSDCommHandler.SendPositionReport: transponder code + mode + rating + flags, format + fortegn af pitch og bank
 FSDCommHandler.SendRealnameInfoResponse: skal der stå USER:1 til sidst? FSINN sender NONE:1 
 InfoRequestMessage: muligheder for CAPS
+Identing (både ved skift fra FS og fra VSPC)
+Squawkmode Charlie (både ved skift fra FS og fra VSPC)
+VSPCMessageHandler.SendPositionReportToFSDServer: TrueAlt + PressureAlt
+VSPCMessageHandler.SendRealnameInfoResponse: NONE=1??
+#SB:::FSIPIR msg?

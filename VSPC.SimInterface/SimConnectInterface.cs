@@ -223,7 +223,7 @@ namespace VSPC.SimInterface
                         Pitch = -posreport.pitch,
                         Bank = -posreport.bank,
                         Heading = posreport.heading,
-                        OnGround = posreport.onground
+                        OnGround = posreport.onground,
 
                     };
                     broker.Publish(positionReportMsg);

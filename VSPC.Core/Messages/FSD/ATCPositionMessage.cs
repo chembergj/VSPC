@@ -29,7 +29,9 @@ namespace VSPC.Core.Messages.FSD
         ATC_C3 = 7, /// Controller 3
         ATC_I1 = 8, /// Instructor 1
         ATC_I2 = 9, /// Instructor 2
-        ATC_I3 = 10 /// Instructor 3
+        ATC_I3 = 10,  /// Instructor 3
+        ATC_SUP = 11, /// Supervisor
+        ATC_ADM = 12  /// Administrator
     };
 
 	public class ATCPositionMessage: AFSDMessage
@@ -41,11 +43,10 @@ namespace VSPC.Core.Messages.FSD
         public AtcRating Rating { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-        public int Altitude { get; set; }
 
         public override string ToString()
         {
-            return string.Format("ATCPos: {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}", Callsign, Frequency, Facilitytype, VisualRange, Rating, Latitude, Longitude, Altitude);
+            return string.Format("ATCPos: {0}, {1}, {2}, {3}, {4}, {5}, {6}", Callsign, Frequency, Facilitytype, VisualRange, Rating, Latitude, Longitude);
         }
 	}
 }
