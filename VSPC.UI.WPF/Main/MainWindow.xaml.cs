@@ -71,6 +71,12 @@ namespace VSPC.UI.WPF.Main
 			}
 		}
 
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            Application.Current.Shutdown();
+        }
+
         private void buttonConnect_Click(object sender, RoutedEventArgs e)
         {
             if (FSDState == ConnectionState.Offline && FlightsimState == ConnectionState.Offline)

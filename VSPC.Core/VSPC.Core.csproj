@@ -80,7 +80,7 @@
     <Compile Include="Messages\FSD\ATextMessage.cs" />
     <Compile Include="Messages\UI\UserClickedLogoffMessage.cs" />
     <Compile Include="Messages\UI\LoggedOffMessage.cs" />
-    <Compile Include="Messages\TrfPositionReportMessage.cs" />
+    <Compile Include="Messages\FSD\TrfPositionReportMessage.cs" />
     <Compile Include="Messages\UI\LoggedInMessage.cs" />
     <Compile Include="Messages\FLSIM\PositionReportMessage.cs" />
     <Compile Include="Messages\AMessage.cs" />

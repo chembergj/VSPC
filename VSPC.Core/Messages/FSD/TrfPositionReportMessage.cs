@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using VSPC.Core.Messages.FSD;
 
-namespace VSPC.Core.Messages
+namespace VSPC.Core.Messages.FSD
 {
     /// <summary>
     /// Reporting of other traffic nearby online traffics position, speed, alt etc.
     /// </summary>
-    public class TrafficPositionReportMessage: AMessage
+    public class TrafficPositionReportMessage: AFSDMessage
     {
         public double Latitude { get; set; }
         public double Longitude { get; set; }
@@ -16,5 +17,6 @@ namespace VSPC.Core.Messages
         public double Groundspeed { get; set; }
         public double Heading { get; set; }
         public double BankAngle { get; set; }
+        public int Pitch { get; set; }
     }
 }
