@@ -15,7 +15,8 @@ namespace VSPC.SimInterface
         public double Heading { get; set; }   // (PLANE HEADING DEGREES TRUE, radians)
         public DateTime Timestamp { get; set; }
         public Int32 zulu_time { get; set; }         // (ZULU TIME, seconds) seconds since midnight UTC
-        public double Speed { get; set; }     // forward speed, meters per second
+        public double IASpeed { get; set; }     // forward speed, meters per second
+        public double GroundSpeed { get; set; }     // forward speed, meters per second
     };
 
     // block of data locating ai object
@@ -50,11 +51,11 @@ namespace VSPC.SimInterface
         const double M_PI = Math.PI;
         const double EARTH_RAD = 6366710.0; // earth's radius in meters
 
-        static double ini_pitch_offset; // pitch adjustment to apply to AI aircraft
-        static double ini_pitch_min; // max low-speed pitch in radians (negative)
-        static double ini_pitch_max; // max high-speed pitch in radians (positive) 
-        static double ini_pitch_v_zero; // speed in m/s for pitch=0;
-
+        const double ini_pitch_offset = 0; // pitch adjustment to apply to AI aircraft
+        const double ini_pitch_min = -0.3; // max low-speed pitch in radians (negative)
+        const double ini_pitch_max = 0.1; // max high-speed pitch in radians (positive) 
+        const double ini_pitch_v_zero = 30; // speed in m/s for pitch=0;
+        
         #region Conversion methods
 
         public static double ConvertKnotsToMetersPerSecond(double speedKts)
@@ -237,7 +238,7 @@ namespace VSPC.SimInterface
             heading = bearing_to_wp - coefficient * heading_delta(target_heading, bearing_to_wp);
             heading = heading + 2 * M_PI;
 
-            return heading % 2 * M_PI;
+            return heading % (2 * M_PI);
         }
 
         //*********************************************************************************************
@@ -300,6 +301,7 @@ namespace VSPC.SimInterface
             return slew_ahead_to_rate(speed);
         }
 
+        /*
         // calculate appropriate pitch/bank/heading/speed values for replaypoint[i]
         public static void ai_update_pbhs(Waypoint[] p, int i)
         {
@@ -348,6 +350,11 @@ namespace VSPC.SimInterface
                 p[i].Bank = Math.Min(p[i].Bank, 1.5);
                 p[i].Bank = Math.Max(p[i].Bank, -1.5);
             }
+        }
+        */
+        public static bool AIAircraftIsParked(Waypoint currentWp, Waypoint newWp)
+        {
+            return distance(currentWp.Latitude, currentWp.Longitude, newWp.Latitude, newWp.Longitude) < 0.0001;
         }
     }
 }

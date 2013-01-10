@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSPC.UI.WPF", "VSPC.UI.WPF\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSPC.UI.Developer", "VSPC.UI.Developer\VSPC.UI.Developer.csproj", "{CB09883D-B4F1-4C75-9056-4A926FB7056D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimMathTest", "SimMathTest\SimMathTest.csproj", "{0DEDDD87-873C-4957-A549-496E76AB1E65}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -114,6 +116,16 @@ Global
 		{CB09883D-B4F1-4C75-9056-4A926FB7056D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{CB09883D-B4F1-4C75-9056-4A926FB7056D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{CB09883D-B4F1-4C75-9056-4A926FB7056D}.Release|x86.ActiveCfg = Release|Any CPU
+		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Debug|x86.ActiveCfg = Debug|x86
+		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Debug|x86.Build.0 = Debug|x86
+		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Release|Any CPU.ActiveCfg = Release|x86
+		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Release|Mixed Platforms.Build.0 = Release|x86
+		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Release|x86.ActiveCfg = Release|x86
+		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

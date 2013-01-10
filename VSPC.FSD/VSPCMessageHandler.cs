@@ -117,7 +117,7 @@ namespace VSPC.FSD
 
         void fsdSession_PilotPositionReceived(object sender, DataReceivedEventArgs<PDUPilotPosition> e)
         {
-            Logger.Info(string.Format("Pilot pos received: Lat, Long: {0},{1}, GS: {2}, hdg: {3}, bank: {4}, pitch: {5}, press.alt: {6}, truealt: {7}", e.PDU.Lat, e.PDU.Lon, e.PDU.GroundSpeed, e.PDU.Heading, e.PDU.Bank, e.PDU.Pitch, e.PDU.PressureAltitude, e.PDU.TrueAltitude));
+            Logger.Info(string.Format("Pilot pos received: Lat, Long: {0},{1}, GS: {2}, hdg: {3}, bank: {4}, pitch: {5}, press.alt: {6}, truealt: {7}", e.PDU.Lat.ToString("####0.00000000"), e.PDU.Lon.ToString("####0.00000000"), e.PDU.GroundSpeed, e.PDU.Heading, e.PDU.Bank, e.PDU.Pitch, e.PDU.PressureAltitude, e.PDU.TrueAltitude));
             var msg = new TrafficPositionReportMessage() { Sender = e.PDU.From, Altitude = e.PDU.TrueAltitude, BankAngle = e.PDU.Bank, Groundspeed = e.PDU.GroundSpeed, Heading = e.PDU.Heading, Latitude = e.PDU.Lat, Longitude = e.PDU.Lon, Pitch = e.PDU.Pitch };
             broker.Publish(msg);
         }
