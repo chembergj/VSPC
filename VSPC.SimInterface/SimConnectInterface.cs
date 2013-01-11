@@ -323,128 +323,127 @@ namespace VSPC.SimInterface
         /// Set the new waypoint and reset the timer-counter
         /// </summary>
         /// <param name="msg"></param>
-        
 
-        private void CalculateSlewAI(uint AIPlaneSimConnectId, AIPositionReportStruct posreport)
+
+        private void HandleAIPositionReport(uint AIPlaneSimConnectId, AIPositionReportStruct posreport)
         {
             var AIAircraft = CallsignToAIPlaneMap.Where(keyvalue => keyvalue.Value.SimConnectObjectId == AIPlaneSimConnectId).First().Value;
             var currentWp = CreateWaypointFromPositionReportStruct(ref posreport, DateTime.Now);
             var newWp = AIAircraft.TargetWaypoint;
 
-            /*
-            double progress = 1;
-            predict_point.Latitude = r[j - 1].latitude + progress * (r[j].latitude - r[j - 1].latitude);
-            predict_point.Longitude = r[j - 1].longitude + progress * (r[j].longitude - r[j - 1].longitude);
-            // include alt_offset in alt calc
-            predict_point.Altitude = r[j - 1].altitude + progress * (r[j].altitude - r[j - 1].altitude) + ai_info[ai_index].alt_offset;
-            predict_point.Heading = SimMath.bearing(r[j - 1].latitude, r[j - 1].longitude, r[j].latitude, r[j].longitude);
-            
-            if (pos.sim_on_ground)
-            {
-                // ON GROUND, so we can calibrate the IGC file alts with an offset
-                // temporarily disabled while I think about the issues...
-                //ai_info[ai_index].alt_offset = pos.altitude - r[j-1].altitude;
-                //if (debug) printf("%s alt_offset %.1f\n",ai_info[ai_index].atc_id, ai_info[ai_index].alt_offset);
-                predict_point.Pitch = 0;
-                predict_point.Bank = 0;
-            }
-            else
-            {
-                predict_point.Bank = r[j - 1].bank + progress * (r[j].bank - r[j - 1].bank);
-                predict_point.Pitch = r[j - 1].pitch + progress * (r[j].pitch - r[j - 1].pitch);
-            }
-             */
-            // now calculate steering deltas based on predict point
-
             if (AIAircraft.IsTargetWaypointStale())
             {
                 Logger.Debug(AIAircraft.Callsign + " has stale target waypoint");
             }
-            else if (!SimMath.AIAircraftIsParked(currentWp, newWp))
+            else if (SimMath.AIAircraftIsParked(currentWp, newWp))
             {
-
-                double bearing_to_wp = SimMath.bearing(currentWp.Latitude, currentWp.Longitude,
-                                               newWp.Latitude, newWp.Longitude);
-
-                uint heading_rate = SimMath.slew_turn_rate(bearing_to_wp, currentWp.Heading, newWp.Heading);
-
-                var period = AIAircraft.RemainingSecondsUntilTarget;
-                AIAircraft.RemainingSecondsUntilTarget--;
-
-                uint ahead_rate = SimMath.slew_ahead_rate(currentWp.Latitude, currentWp.Longitude,
-                                               newWp.Latitude, newWp.Longitude,
-                                               period);
-
-                uint bank_rate = SimMath.slew_rotation_to_rate((newWp.Bank - currentWp.Bank) / period);
-
-                uint pitch_rate = SimMath.slew_rotation_to_rate((newWp.Pitch - currentWp.Pitch) / period);
-
-                uint alt_rate = SimMath.slew_alt_to_rate((currentWp.Altitude - newWp.Altitude) / period);
-
-                //debug - print lat longs for excel analysis
-                // time,lat,lon,alt,pitch,bank,heading,ahead rate, alt rate, pitch rate, bank rate, heading rate
-
-                Logger.Debug(string.Format("CURRENT WP: La {0}, Lo {1}, Alt {2}, Pi {3}, Ba {4}, Hdg {5}, GS: {6}",
-                                   currentWp.Latitude.ToString("####0.00000000"),
-                                   currentWp.Longitude.ToString("####0.00000000"),
-                                   currentWp.Altitude,
-                                   currentWp.Pitch,
-                                   currentWp.Bank,
-                                   currentWp.Heading,
-                                   currentWp.GroundSpeed
-                                   ));
-
-                Logger.Debug(string.Format("NEW WP: La {0}, Lo {1}, Alt {2}, Pi {3}, Ba {4}, Hdg {5}, GS {11}, Ahead rt {6}, Alt rt {7}, Pi rt {8}, Ba rt {9}, Hdg rt {10}",
-                                    newWp.Latitude.ToString("####0.00000000"),
-                                    newWp.Longitude.ToString("####0.00000000"),
-                                    newWp.Altitude,
-                                    newWp.Pitch,
-                                    newWp.Bank,
-                                    newWp.Heading,
-                                    (int)ahead_rate,
-                                    (int)alt_rate,
-                                    (int)pitch_rate,
-                                    (int)bank_rate,
-                                    (int)heading_rate,
-                                    newWp.GroundSpeed
-                                    ));
-
-                // send the actual slew adjustments
-
-                simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
-                                    SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_AHEAD_SET,
-                                    ahead_rate,
-                                    GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                                    SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-
-                simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
-                                    SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_HEADING_SET,
-                                    heading_rate,
-                                    GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                                    SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-
-                simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
-                                    SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_ALT_SET,
-                                    alt_rate,
-                                    GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                                    SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-
-                simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
-                                    SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_BANK_SET,
-                                    bank_rate,
-                                    GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                                    SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-
-                simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
-                                    SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_PITCH_SET,
-                                    pitch_rate,
-                                    GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                                    SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-
+                ResetRates(AIAircraft);
             }
+            else
+            {
+                CalculateSlewAI(AIAircraft, currentWp, newWp);
+            }
+        }
+
+        private void CalculateSlewAI(AIPlane AIAircraft, Waypoint currentWp, Waypoint newWp)
+        {
+
+            // now calculate steering deltas based on predict point
+
+            double bearing_to_wp = SimMath.bearing(currentWp.Latitude, currentWp.Longitude,
+                                           newWp.Latitude, newWp.Longitude);
+
+            uint heading_rate = 0;
+
+            heading_rate = SimMath.slew_turn_rate(bearing_to_wp, currentWp.Heading, newWp.Heading, currentWp.GroundSpeed);
+            
+
+            var period = AIAircraft.RemainingSecondsUntilTarget;
+            AIAircraft.RemainingSecondsUntilTarget--;
+
+            uint ahead_rate = SimMath.slew_ahead_rate(currentWp.Latitude, currentWp.Longitude,
+                                           newWp.Latitude, newWp.Longitude,
+                                           period);
+
+            uint bank_rate = SimMath.slew_rotation_to_rate((newWp.Bank - currentWp.Bank) / period, currentWp.GroundSpeed);
+
+            uint pitch_rate = SimMath.slew_rotation_to_rate((newWp.Pitch - currentWp.Pitch) / period, currentWp.GroundSpeed);
+
+            uint alt_rate = SimMath.slew_alt_to_rate((currentWp.Altitude - newWp.Altitude) / period);
+
+            
+
+            Logger.Debug(string.Format("CURRENT WP: La {0}, Lo {1}, Alt {2}, Pi {3}, Ba {4}, Hdg {5}, GS: {6}",
+                               currentWp.Latitude.ToString("####0.00000000"),
+                               currentWp.Longitude.ToString("####0.00000000"),
+                               currentWp.Altitude,
+                               currentWp.Pitch,
+                               currentWp.Bank,
+                               currentWp.Heading,
+                               currentWp.GroundSpeed
+                               ));
+
+            Logger.Debug(string.Format("NEW WP: La {0}, Lo {1}, Alt {2}, Pi {3}, Ba {4}, Hdg {5}, GS {11}, Ahead rt {6}, Alt rt {7}, Pi rt {8}, Ba rt {9}, Hdg rt {10}",
+                                newWp.Latitude.ToString("####0.00000000"),
+                                newWp.Longitude.ToString("####0.00000000"),
+                                newWp.Altitude,
+                                newWp.Pitch,
+                                newWp.Bank,
+                                newWp.Heading,
+                                (int)ahead_rate,
+                                (int)alt_rate,
+                                (int)pitch_rate,
+                                (int)bank_rate,
+                                (int)heading_rate,
+                                newWp.GroundSpeed
+                                ));
+            
+            
+
+            // send the actual slew adjustments
+
+            TransmitSlewEvents(AIAircraft, heading_rate, ahead_rate, bank_rate, pitch_rate, alt_rate);
 
             // send gear up/down as necessary
             // TODO: ai_gear(ai_index, i, pos);
+        }
+
+        private void TransmitSlewEvents(AIPlane AIAircraft, uint heading_rate, uint ahead_rate, uint bank_rate, uint pitch_rate, uint alt_rate)
+        {
+            simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
+                                SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_AHEAD_SET,
+                                ahead_rate,
+                                GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                                SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+
+            simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
+                                SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_HEADING_SET,
+                                heading_rate,
+                                GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                                SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+
+            simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
+                                SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_ALT_SET,
+                                alt_rate,
+                                GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                                SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+
+            simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
+                                SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_BANK_SET,
+                                bank_rate,
+                                GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                                SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+
+            simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
+                                SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_PITCH_SET,
+                                pitch_rate,
+                                GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                                SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+        }
+
+        private void ResetRates(AIPlane AIAircraft)
+        {
+            TransmitSlewEvents(AIAircraft, 0, 0, 0, 0, 0);
         }
 
        
@@ -819,7 +818,7 @@ namespace VSPC.SimInterface
                     broker.Publish(positionReportMsg);
                     break;
                 case SIMCONNECT_EVENTS.EVENTID_POSITIONREPORT_FOR_AIUPDATE:
-                    CalculateSlewAI(data.dwObjectID, (AIPositionReportStruct)data.dwData[0]);
+                    HandleAIPositionReport(data.dwObjectID, (AIPositionReportStruct)data.dwData[0]);
                     break;
             }
 

@@ -19,29 +19,6 @@ namespace VSPC.SimInterface
         public double GroundSpeed { get; set; }     // forward speed, meters per second
     };
 
-    // block of data locating ai object
-    struct AIStruct
-    {
-        public double latitude; // deg N +ve
-        public double longitude; // deg E +ve
-        public double altitude; // m
-        public double pitch; // PLANE PITCH DEGREES, Radians
-        public double bank; // PLANE BANK DEGREES, Radians
-        public double heading; // PLANE HEADING DEGREES TRUE, Radians
-        public double altitude_agl;
-        public Int32 sim_on_ground;
-    };
-
-    // block of data to move an ai object
-    struct AIMoveStruct
-    {
-        public double latitude; // deg N +ve
-        public double longitude; // deg E +ve
-        public double altitude; // m
-        public double pitch; // PLANE PITCH DEGREES, Radians
-        public double bank; // PLANE BANK DEGREES, Radians
-        public double heading; // PLANE HEADING DEGREES TRUE, Radians
-    };
 
     /// <summary>
     /// Credits goes to Ian Forster-Lewis www.forsterlewis.com, who did all the hard math work
@@ -55,7 +32,8 @@ namespace VSPC.SimInterface
         const double ini_pitch_min = -0.3; // max low-speed pitch in radians (negative)
         const double ini_pitch_max = 0.1; // max high-speed pitch in radians (positive) 
         const double ini_pitch_v_zero = 30; // speed in m/s for pitch=0;
-        
+        const uint MINIMUM_GS_WITHOUT_RATELIMITS = 5;   // Below this speed, slew rates will be reduced
+
         #region Conversion methods
 
         public static double ConvertKnotsToMetersPerSecond(double speedKts)
@@ -205,12 +183,24 @@ namespace VSPC.SimInterface
         //*********************************************************************************************
         // slew calibration functions
 
-        public static uint slew_rotation_to_rate(double rotation)
+        public static uint slew_rotation_to_rate(double rotation, double current_groundspeed)
         { // rotation in radians / second
             // +ve rotate to port, port wing down, nose down
             // rotation rad/s = rate ^ 2 / 11240000
 
-            return (rotation < 0) ? (uint)-Math.Sqrt(-rotation * 11240000) : (uint)Math.Sqrt(rotation * 11240000);
+            var rate = (rotation < 0) ? (uint)-Math.Sqrt(-rotation * 11240000) : (uint)Math.Sqrt(rotation * 11240000);
+
+            
+            // reduce rates depending on the current groundspeed
+            // without a limit, the plane makes rather hard turns/banks/pitches at low speeds
+
+            if (current_groundspeed < MINIMUM_GS_WITHOUT_RATELIMITS)
+            {
+                rate = Math.Min(rate, 100);
+                rate = (uint)Math.Max((int)rate, -100);
+            }
+
+            return rate;
         }
 
         public static uint slew_ahead_to_rate(double speed)
@@ -280,7 +270,7 @@ namespace VSPC.SimInterface
         }
 
         // what rate should object change heading at
-        public static uint slew_turn_rate(double bearing_to_wp, double current_heading, double target_heading)
+        public static uint slew_turn_rate(double bearing_to_wp, double current_heading, double target_heading, double current_groundspeed)
         {
             double desired;
             double coefficient;
@@ -290,7 +280,7 @@ namespace VSPC.SimInterface
             desired = desired_heading(bearing_to_wp, target_heading);
 
             // note minus in front of coefficient - +ve turn reduces heading!
-            return slew_rotation_to_rate(-coefficient * heading_delta(desired, current_heading));
+            return slew_rotation_to_rate(-coefficient * heading_delta(desired, current_heading), current_groundspeed);
         }
 
 
@@ -354,7 +344,7 @@ namespace VSPC.SimInterface
         */
         public static bool AIAircraftIsParked(Waypoint currentWp, Waypoint newWp)
         {
-            return distance(currentWp.Latitude, currentWp.Longitude, newWp.Latitude, newWp.Longitude) < 0.0001;
+            return distance(currentWp.Latitude, currentWp.Longitude, newWp.Latitude, newWp.Longitude) < 0.001;
         }
     }
 }
