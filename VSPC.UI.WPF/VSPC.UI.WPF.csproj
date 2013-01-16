@@ -10,9 +10,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VSPC.UI.WPF</RootNamespace>
     <AssemblyName>VSPC.UI.WPF</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -58,6 +59,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -115,6 +117,8 @@
     <Resource Include="Images\109_AllAnnotations_Default_16x16_72.png" />
     <Resource Include="Images\109_AllAnnotations_Warning_16x16_72.png" />
     <Resource Include="Images\109_AllAnnotations_Error_16x16_72.png" />
+    <Resource Include="Images\112_DownArrowShort_Blue_16x16_72.png" />
+    <Resource Include="Images\112_UpArrowShort_Blue_16x16_72.png" />
     <Content Include="speaker.png" />
     <Content Include="Vatsim.png" />
     <Resource Include="weather_cloudy.png" />
@@ -127,7 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>

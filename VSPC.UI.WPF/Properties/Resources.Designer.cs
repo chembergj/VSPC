@@ -22,7 +22,7 @@ namespace VSPC.UI.WPF.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace VSPC.UI.WPF.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("VSPC.UI.WPF.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace VSPC.UI.WPF.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -60,21 +60,21 @@ namespace VSPC.UI.WPF.Properties {
             }
         }
         
-        internal static System.Drawing.Bitmap _109_AllAnnotations_Default_16x16_72 {
+        public static System.Drawing.Bitmap _109_AllAnnotations_Default_16x16_72 {
             get {
                 object obj = ResourceManager.GetObject("_109_AllAnnotations_Default_16x16_72", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
         
-        internal static System.Drawing.Bitmap _109_AllAnnotations_Error_16x16_72 {
+        public static System.Drawing.Bitmap _109_AllAnnotations_Error_16x16_72 {
             get {
                 object obj = ResourceManager.GetObject("_109_AllAnnotations_Error_16x16_72", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
         
-        internal static System.Drawing.Bitmap _109_AllAnnotations_Warning_16x16_72 {
+        public static System.Drawing.Bitmap _109_AllAnnotations_Warning_16x16_72 {
             get {
                 object obj = ResourceManager.GetObject("_109_AllAnnotations_Warning_16x16_72", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -82,9 +82,45 @@ namespace VSPC.UI.WPF.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string Buttons_Cancel {
+            get {
+                return ResourceManager.GetString("Buttons_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New.
+        /// </summary>
+        public static string Buttons_New {
+            get {
+                return ResourceManager.GetString("Buttons_New", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ok.
+        /// </summary>
+        public static string Buttons_Ok {
+            get {
+                return ResourceManager.GetString("Buttons_Ok", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove.
+        /// </summary>
+        public static string Buttons_Remove {
+            get {
+                return ResourceManager.GetString("Buttons_Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Connection to flight simulator OK.
         /// </summary>
-        internal static string MainWindow_ConnectedFSim {
+        public static string MainWindow_ConnectedFSim {
             get {
                 return ResourceManager.GetString("MainWindow_ConnectedFSim", resourceCulture);
             }
@@ -93,7 +129,7 @@ namespace VSPC.UI.WPF.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Connection to Vatsim OK.
         /// </summary>
-        internal static string MainWindow_ConnectedVatsim {
+        public static string MainWindow_ConnectedVatsim {
             get {
                 return ResourceManager.GetString("MainWindow_ConnectedVatsim", resourceCulture);
             }
@@ -102,7 +138,7 @@ namespace VSPC.UI.WPF.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Connecting to flight simulator....
         /// </summary>
-        internal static string MainWindow_ConnectingToFSim {
+        public static string MainWindow_ConnectingToFSim {
             get {
                 return ResourceManager.GetString("MainWindow_ConnectingToFSim", resourceCulture);
             }
@@ -111,7 +147,7 @@ namespace VSPC.UI.WPF.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Connecting to Vatsim....
         /// </summary>
-        internal static string MainWindow_ConnectingToVatsim {
+        public static string MainWindow_ConnectingToVatsim {
             get {
                 return ResourceManager.GetString("MainWindow_ConnectingToVatsim", resourceCulture);
             }
@@ -120,7 +156,7 @@ namespace VSPC.UI.WPF.Properties {
         /// <summary>
         ///   Looks up a localized string similar to No connection to flight simulator.
         /// </summary>
-        internal static string MainWindow_NoConnectionFSim {
+        public static string MainWindow_NoConnectionFSim {
             get {
                 return ResourceManager.GetString("MainWindow_NoConnectionFSim", resourceCulture);
             }
@@ -129,16 +165,142 @@ namespace VSPC.UI.WPF.Properties {
         /// <summary>
         ///   Looks up a localized string similar to No connection to Vatsim.
         /// </summary>
-        internal static string MainWindow_NoConnectionVatsim {
+        public static string MainWindow_NoConnectionVatsim {
             get {
                 return ResourceManager.GetString("MainWindow_NoConnectionVatsim", resourceCulture);
             }
         }
         
-        internal static System.Drawing.Bitmap options {
+        public static System.Drawing.Bitmap options {
             get {
                 object obj = ResourceManager.GetObject("options", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Airline:.
+        /// </summary>
+        public static string Options_AI_Airline {
+            get {
+                return ResourceManager.GetString("Options_AI_Airline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (ex. &apos;NAX&apos;, &apos;SAS&apos;, &apos;DLH&apos;).
+        /// </summary>
+        public static string Options_AI_AirlineExample {
+            get {
+                return ResourceManager.GetString("Options_AI_AirlineExample", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AI Models.
+        /// </summary>
+        public static string Options_AI_Header {
+            get {
+                return ResourceManager.GetString("Options_AI_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prioritized list of rules for AI model matching:.
+        /// </summary>
+        public static string Options_AI_Listheader {
+            get {
+                return ResourceManager.GetString("Options_AI_Listheader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Model:.
+        /// </summary>
+        public static string Options_AI_Model {
+            get {
+                return ResourceManager.GetString("Options_AI_Model", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (ex. &apos;Beech King Air 350 Paint1&apos;).
+        /// </summary>
+        public static string Options_AI_ModelExample {
+            get {
+                return ResourceManager.GetString("Options_AI_ModelExample", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Plane type:.
+        /// </summary>
+        public static string Options_AI_Planetype {
+            get {
+                return ResourceManager.GetString("Options_AI_Planetype", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (ex. &apos;B738&apos;,&apos;C172&apos;).
+        /// </summary>
+        public static string Options_AI_PlanetypeExample {
+            get {
+                return ResourceManager.GetString("Options_AI_PlanetypeExample", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rule description:.
+        /// </summary>
+        public static string Options_AI_RuleDescription {
+            get {
+                return ResourceManager.GetString("Options_AI_RuleDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CID:.
+        /// </summary>
+        public static string Options_Conn_CID {
+            get {
+                return ResourceManager.GetString("Options_Conn_CID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connection.
+        /// </summary>
+        public static string Options_Conn_Header {
+            get {
+                return ResourceManager.GetString("Options_Conn_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password:.
+        /// </summary>
+        public static string Options_Conn_Password {
+            get {
+                return ResourceManager.GetString("Options_Conn_Password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Real name:.
+        /// </summary>
+        public static string Options_Conn_Realname {
+            get {
+                return ResourceManager.GetString("Options_Conn_Realname", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server:.
+        /// </summary>
+        public static string Options_Conn_Server {
+            get {
+                return ResourceManager.GetString("Options_Conn_Server", resourceCulture);
             }
         }
     }

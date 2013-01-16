@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSPC.UI.Developer", "VSPC.U
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimMathTest", "SimMathTest\SimMathTest.csproj", "{0DEDDD87-873C-4957-A549-496E76AB1E65}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSPC.Common", "VSPC.Common\VSPC.Common.csproj", "{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -126,6 +128,16 @@ Global
 		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Release|Mixed Platforms.Build.0 = Release|x86
 		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Release|x86.ActiveCfg = Release|x86
 		{0DEDDD87-873C-4957-A549-496E76AB1E65}.Release|x86.Build.0 = Release|x86
+		{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
