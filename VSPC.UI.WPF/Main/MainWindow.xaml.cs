@@ -21,8 +21,8 @@ namespace VSPC.UI.WPF.Main
     public partial class MainWindow : Window, IVSPCMessageHandler
     {
         MessageBroker broker;
-        ConnectionState FSDState = ConnectionState.Offline;
-        ConnectionState FlightsimState = ConnectionState.Offline;
+    	private ConnectionState _fsdState = ConnectionState.Offline;
+    	private ConnectionState _flightsimState = ConnectionState.Offline;
 		Queue<MessageBoxMessage> msgBoxMessages = new Queue<MessageBoxMessage>();
     	private bool msgBoxOpen = false;
         readonly List<CommChannelTab> commChannelTabs = new List<CommChannelTab>();
@@ -33,7 +33,86 @@ namespace VSPC.UI.WPF.Main
 
         public List<CommChannelTab> CommChannelTabs { get { return commChannelTabs; } }
 
-        public MainWindow(MessageBroker broker)
+
+    	ConnectionState FlightsimState
+    	{
+    		get { return _flightsimState; }
+    		set
+    		{
+    			_flightsimState = value;
+    			DoInUIThread(() =>
+    			             	{
+    			             		imgFSX.Source = GetConnectionImage(value);
+    			             		string tooltip = "";
+    			             		switch (value)
+    			             		{
+    			             			case ConnectionState.Offline:
+    			             				tooltip = Properties.Resources.MainWindow_NoConnectionFSim;
+    			             				break;
+    			             			case ConnectionState.LogonInProgress:
+    			             				tooltip = Properties.Resources.MainWindow_ConnectingToFSim;
+    			             				break;
+    			             			case ConnectionState.Online:
+    			             				tooltip = Properties.Resources.MainWindow_ConnectedFSim;
+    			             				break;
+    			             		}
+
+    			             		imgFSX.ToolTip = tooltip;
+    			             	});
+
+    		}
+    	}
+
+    	ConnectionState FSDState
+    	{
+    		get { return _fsdState; }
+			set
+			{
+				_fsdState = value;
+				DoInUIThread(() =>
+				             	{
+				             		imgVatsim.Source = GetConnectionImage(value);
+				             		string tooltip = "";
+				             		switch (value)
+				             		{
+				             			case ConnectionState.Offline:
+				             				tooltip = Properties.Resources.MainWindow_NoConnectionVatsim;
+				             				break;
+				             			case ConnectionState.LogonInProgress:
+				             				tooltip = Properties.Resources.MainWindow_ConnectingToVatsim;
+				             				break;
+				             			case ConnectionState.Online:
+				             				tooltip = Properties.Resources.MainWindow_ConnectedVatsim;
+				             				break;
+				             		}
+
+				             		imgVatsim.ToolTip = tooltip;
+
+				             	});
+			}
+    	}
+
+		private ImageSource GetConnectionImage(ConnectionState state)
+		{
+			string packUri = "pack://application:,,,/" + System.Reflection.Assembly.GetExecutingAssembly().GetName() +  ";component/Images/";
+
+			switch(state)
+			{
+				case ConnectionState.Offline:
+					packUri += "109_AllAnnotations_Error_16x16_72.png";
+					break;
+				case ConnectionState.LogonInProgress:
+					packUri += "109_AllAnnotations_Error_16x16_72.png";
+					break;
+				case ConnectionState.Online:
+					packUri += "109_AllAnnotations_Default_16x16_72.png";
+					break;
+			}
+
+			return new ImageSourceConverter().ConvertFromString(packUri) as ImageSource;
+		}
+
+    	public MainWindow(MessageBroker broker)
         {
             this.broker = broker;
             broker.Subscribe(this, typeof(FlightsimConnectedMessage));
@@ -175,6 +254,8 @@ namespace VSPC.UI.WPF.Main
                 buttonConnect.Content = "CONNECT";
                 buttonConnect.Foreground = Brushes.Black;
                 comboBoxCallsign.IsEnabled = true;
+            	FSDState = ConnectionState.Offline;
+            	FlightsimState = ConnectionState.Offline;
             }));
         }
 
@@ -190,20 +271,28 @@ namespace VSPC.UI.WPF.Main
         private void HandleCommErrorMessage(SimCommErrorMessage commErrorMessage)
         {
             if (FlightsimState == ConnectionState.LogonInProgress)
-                HandleErrorMessage("Unable to connect to Flightsim");
+            {
+				ShowErrorMessage("Unable to connect to Flightsim");
+				SwitchToOfflineMode();
+            }
+                
             else if (FlightsimState == ConnectionState.Online)
-                HandleErrorMessage("Flightsim connection lost");
-        }
+                ShowErrorMessage("Flightsim connection lost");
+
+			FlightsimState = ConnectionState.Offline;
+	}
 
         void HandleCommErrorMessage(CommErrorMessage commErrorMessage)
         {
             if (FSDState == ConnectionState.LogonInProgress)
-                HandleErrorMessage(commErrorMessage.ErrorMessage);
+                ShowErrorMessage(commErrorMessage.ErrorMessage);
             if (FSDState == ConnectionState.Online)
-                HandleErrorMessage("Connection lost");
+                ShowErrorMessage("Connection lost");
+
+        	FSDState = ConnectionState.Offline;
         }
 
-        private void HandleErrorMessage(string errorMessage)
+        private void ShowErrorMessage(string errorMessage)
         {
             Action handleError = () => {
                 comboBoxCallsign.IsReadOnly = false;

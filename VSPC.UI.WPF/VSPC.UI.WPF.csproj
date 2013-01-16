@@ -57,6 +57,7 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -73,6 +74,11 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -106,6 +112,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\options.jpg" />
+    <Resource Include="Images\109_AllAnnotations_Default_16x16_72.png" />
+    <Resource Include="Images\109_AllAnnotations_Warning_16x16_72.png" />
+    <Resource Include="Images\109_AllAnnotations_Error_16x16_72.png" />
     <Content Include="speaker.png" />
     <Content Include="Vatsim.png" />
     <Resource Include="weather_cloudy.png" />
@@ -115,6 +124,12 @@
       <Project>{0850F789-0671-4C7A-BF77-99197DAC1979}</Project>
       <Name>VSPC.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

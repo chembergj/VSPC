@@ -21,6 +21,7 @@
 		<Grid.RowDefinitions>
 			<RowDefinition  Height="Auto"></RowDefinition>
 			<RowDefinition  Height="*"></RowDefinition>
+			<RowDefinition  Height="Auto"></RowDefinition>
 		</Grid.RowDefinitions>
 
 			<!--<ToolBarPanel Name="toolBarPanel1" HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="0">-->
@@ -49,7 +50,7 @@
                 <Image Source="weather_cloudy.png"></Image>
             </Button>-->
             <Button Height="30" Name="buttonOptions" Click="buttonOptions_Click">
-                <Image Source="..\\Images\\options.jpg"></Image>
+                <Image Source="../Images/options.jpg"></Image>
             </Button>
         </ToolBar>
 			
@@ -66,10 +67,10 @@
 					<ColumnDefinition Width="200"></ColumnDefinition>
 				</Grid.ColumnDefinitions>
 
-				<TabControl HorizontalAlignment="Stretch" Name="tabControl1" VerticalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+				<TabControl HorizontalAlignment="Stretch" Name="tabControl1" VerticalAlignment="Stretch" Margin="0,0,5,0" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
 					<TabItem Header="All" Name="tabItemAll">
 						<!-- <Grid Height="99" /> -->
-						<ListBox x:Name="listboxAll" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+						<ListBox x:Name="listboxAll" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderThickness="0" />
 					</TabItem>
 					<TabItem Header="COMM1" Name="tabItemComm1">
                         <ListBox x:Name="listboxComm1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
@@ -82,9 +83,9 @@
 					</TabItem>
                 </TabControl>
                 <Label Content=">" Grid.Row="1" Grid.Column="0" Height="20" FontSize="12" Padding="4,0" />
-				<TextBox Height="23" HorizontalAlignment="Stretch" Margin="0,2,5,2" Name="textBox1" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="1" BorderThickness="1" BorderBrush="Black" Text="" KeyUp="textBox1_KeyUp" />
+				<TextBox Height="23" HorizontalAlignment="Stretch" Margin="0,2,5,2" Name="textBox1" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="1" BorderThickness="1" BorderBrush="#FF8C8E94" Text="" KeyUp="textBox1_KeyUp" />
                 <Border BorderBrush="Black" BorderThickness="1" Grid.Column="2" Grid.RowSpan="2" Margin="2,0,0,0">
-                <Grid  HorizontalAlignment="Left"  Margin="0,23,0,0" Name="listBox1" VerticalAlignment="Stretch" Width="200" Background="#FFF9F9F9">
+					<Grid  HorizontalAlignment="Left"  Margin="0,23,0,0" Name="listBox1" VerticalAlignment="Stretch" Width="200" Background="#FFF9F9F9">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="150" ></ColumnDefinition>
                         <ColumnDefinition Width="20"></ColumnDefinition>
@@ -103,9 +104,19 @@
                     <Image Grid.Row="0" Grid.Column="2" Source="speaker.png" Height="20" Width="20" Stretch="Uniform"></Image>
                     <Image Grid.Row="1" Grid.Column="1" Source="speaker.png" Height="20" Width="20" Stretch="Uniform"></Image>
 				</Grid>
-                    </Border>
+                </Border>
 				<Label Content="ATC ONLINE" Grid.Column="2" Height="28" HorizontalAlignment="Left" Margin="6,0,0,0" Name="label1" VerticalAlignment="Top" Foreground="#FF2A7FFF" FontWeight="Bold" />
 			</Grid>
 		</Expander>
-    </Grid>
+		<StatusBar Grid.Row="2" Height="23" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Name="statusBar1" >
+			<StackPanel Orientation="Horizontal">
+				<TextBlock>Vatsim:</TextBlock>
+				<Image Name="imgVatsim" Margin="5,0,5,0" Source="../Images/109_AllAnnotations_Error_16x16_72.png"/>
+				<TextBlock>FSX:</TextBlock>
+				<Image Name="imgFSX" Margin="5,0,5,0" Source="../Images/109_AllAnnotations_Error_16x16_72.png"/>
+				<TextBlock>Voice:</TextBlock>
+				<Image Name="imgVVL" Margin="5,0,5,0" Source="../Images/109_AllAnnotations_Error_16x16_72.png"/>
+			</StackPanel>
+		</StatusBar>
+	</Grid>
 </Window>
