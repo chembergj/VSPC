@@ -124,6 +124,10 @@
     <Resource Include="weather_cloudy.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\VSPC.Common\VSPC.Common.csproj">
+      <Project>{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}</Project>
+      <Name>VSPC.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\VSPC.Core\VSPC.Core.csproj">
       <Project>{0850F789-0671-4C7A-BF77-99197DAC1979}</Project>
       <Name>VSPC.Core</Name>

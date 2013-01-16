@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:l="clr-namespace:VSPC.UI.WPF"
 		xmlns:prop="clr-namespace:VSPC.UI.WPF.Properties"
-        Title="VSPC Options"   Width="600" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" Height="474" WindowStyle="ToolWindow" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" >
+		xmlns:c="clr-namespace:VSPC.Common;assembly=VSPC.Common"
+        Title="VSPC Options"   Width="600" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:Common="clr-namespace:VSPC.Common;assembly=VSPC.Common" Height="496" WindowStyle="ToolWindow" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" >
 	<Window.Resources>
 		<ObjectDataProvider x:Key="settings" ObjectType="{x:Type l:Properties.Settings}"></ObjectDataProvider>
 		<Style TargetType="Label">
@@ -14,101 +15,116 @@
 			<Setter Property="Height" Value="20"/>
 		</Style>
 	</Window.Resources>
+	<Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="Auto" SharedSizeGroup="OkCancel"/>
+			<ColumnDefinition Width="Auto" SharedSizeGroup="OkCancel"/>
+		</Grid.ColumnDefinitions>	
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+		<TabControl Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Name="tabControlConnection" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch">
+			<TabItem Header="{x:Static prop:Resources.Options_Conn_Header}" Name="tabItemConnection">
+				<Grid Margin="5,20,5,5">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="100"/>
+						<ColumnDefinition Width="200"/>
+						<ColumnDefinition Width="100"/>
+						<ColumnDefinition Width="200"/>
+					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="40"/>
+						<RowDefinition Height="40"/>
+						<RowDefinition Height="40"/>
+						<RowDefinition Height="40"/>
+						<RowDefinition Height="*"/>
+					</Grid.RowDefinitions>
+					<Label Content="{x:Static prop:Resources.Options_Conn_Realname}" Grid.Column="0" Grid.Row="0"></Label>
+					<TextBox Grid.Row="0"  HorizontalAlignment="Stretch" Grid.Column="1" Text="{Binding Source={StaticResource settings}, Path=Default.Realname}"></TextBox>
 
-	<TabControl HorizontalAlignment="Stretch" Name="tabControlConnection" VerticalAlignment="Stretch">
-		<TabItem Header="{x:Static prop:Resources.Options_Conn_Header}" Name="tabItemConnection">
-			<Grid Margin="5,20,5,5">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="100"/>
-					<ColumnDefinition Width="200"/>
-					<ColumnDefinition Width="100"/>
-					<ColumnDefinition Width="200"/>
-				</Grid.ColumnDefinitions>
-				<Grid.RowDefinitions>
-					<RowDefinition Height="40"/>
-					<RowDefinition Height="40"/>
-					<RowDefinition Height="40"/>
-					<RowDefinition Height="40"/>
-					<RowDefinition Height="*"/>
-				</Grid.RowDefinitions>
-				<Label Content="{x:Static prop:Resources.Options_Conn_Realname}" Grid.Column="0" Grid.Row="0"></Label>
-				<TextBox Grid.Row="0"  HorizontalAlignment="Stretch" Grid.Column="1" Text="{Binding Source={StaticResource settings}, Path=Default.Realname}"></TextBox>
+					<Label Content="{x:Static prop:Resources.Options_Conn_CID}" Grid.Column="0" Grid.Row="1"></Label>
+					<TextBox Grid.Row="1" HorizontalAlignment="Stretch" Grid.Column="1" Text="{Binding Source={StaticResource settings}, Path=Default.CID}"></TextBox>
 
-				<Label Content="{x:Static prop:Resources.Options_Conn_CID}" Grid.Column="0" Grid.Row="1"></Label>
-				<TextBox Grid.Row="1" HorizontalAlignment="Stretch" Grid.Column="1" Text="{Binding Source={StaticResource settings}, Path=Default.CID}"></TextBox>
+					<Label Content="{x:Static prop:Resources.Options_Conn_Password}" Grid.Column="0" Grid.Row="2"></Label>
+					<TextBox Grid.Row="2"  HorizontalAlignment="Stretch" Grid.Column="1" Text="{Binding Source={StaticResource settings}, Path=Default.Password}"></TextBox>
 
-				<Label Content="{x:Static prop:Resources.Options_Conn_Password}" Grid.Column="0" Grid.Row="2"></Label>
-				<TextBox Grid.Row="2"  HorizontalAlignment="Stretch" Grid.Column="1" Text="{Binding Source={StaticResource settings}, Path=Default.Password}"></TextBox>
+					<Label Content="{x:Static prop:Resources.Options_Conn_Server}" Grid.Column="0" Grid.Row="3"></Label>
+					<TextBox Grid.Row="3" HorizontalAlignment="Stretch" Grid.Column="1" Text="{Binding Source={StaticResource settings}, Path=Default.Server}"></TextBox>
 
-				<Label Content="{x:Static prop:Resources.Options_Conn_Server}" Grid.Column="0" Grid.Row="3"></Label>
-				<TextBox Grid.Row="3" HorizontalAlignment="Stretch" Grid.Column="1" Text="{Binding Source={StaticResource settings}, Path=Default.Server}"></TextBox>
-
-				<Button Content="{x:Static prop:Resources.Buttons_Ok}" Grid.Row="4" Grid.Column="1" Height="23" Name="buttonOk"  Width="75" IsDefault="True" Click="buttonOk_Click" />
-				<Button Content="{x:Static prop:Resources.Buttons_Cancel}" Grid.Row="4" Grid.Column="2" Height="23" Name="buttonCancel" Width="75" Click="buttonCancel_Click" />
-			</Grid>
-		</TabItem>
-		<TabItem Name="tabAIModel" Header="{x:Static prop:Resources.Options_AI_Header}">
-			<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"></RowDefinition>
-					<RowDefinition Height="*"></RowDefinition>
-					<RowDefinition Height="Auto"></RowDefinition>
-					<RowDefinition Height="Auto"></RowDefinition>
-					<RowDefinition Height="Auto"></RowDefinition>
-					<RowDefinition Height="Auto"></RowDefinition>
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*"></ColumnDefinition>
-					<ColumnDefinition Width="*"></ColumnDefinition>
-					<ColumnDefinition Width="Auto"></ColumnDefinition>
-				</Grid.ColumnDefinitions>
-				<TextBlock Text="{x:Static prop:Resources.Options_AI_Listheader}" Margin="5,5,0,0" Grid.Row="0"/>
-				<DataGrid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  x:Name="dataGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,5,5,5">
-				</DataGrid>
-				<Grid Grid.Row="1" Grid.Column="2">
+				</Grid>
+			</TabItem>
+			<TabItem Name="tabAIModel" Header="{x:Static prop:Resources.Options_AI_Header}">
+				<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"></RowDefinition>
+						<RowDefinition Height="*"></RowDefinition>
+						<RowDefinition Height="Auto"></RowDefinition>
+						<RowDefinition Height="Auto"></RowDefinition>
+						<RowDefinition Height="Auto"></RowDefinition>
+						<RowDefinition Height="Auto"></RowDefinition>
+					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="*"></ColumnDefinition>
+						<ColumnDefinition Width="*"></ColumnDefinition>
+						<ColumnDefinition Width="Auto"></ColumnDefinition>
 					</Grid.ColumnDefinitions>
-					<Grid.RowDefinitions>
-						<RowDefinition></RowDefinition>
-						<RowDefinition></RowDefinition>
-					</Grid.RowDefinitions>
-					<Button Grid.Column="1" Grid.Row="0" VerticalAlignment="Bottom" Margin="0,0,0,10" Height="Auto" >
-						<Image Width="16" Height="16" Source="Images/112_UpArrowShort_Blue_16x16_72.png"/>
-					</Button>
+					<TextBlock Text="{x:Static prop:Resources.Options_AI_Listheader}" Margin="5,5,0,0" Grid.Row="0"/>
+					<DataGrid ItemsSource="{Binding Source={x:Static c:AIModelRuleRepository.AllRules}}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  x:Name="dataGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,5,5,5" AutoGenerateColumns="False">
+						<DataGrid.Columns>
+							<DataGridTextColumn Header="Airline" Binding="{Binding Airline}"  MinWidth="100" />
+							<DataGridTextColumn Header="Plane type" Binding="{Binding PlaneType}" MinWidth="100" />
+							<DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="*" />
+						</DataGrid.Columns>
+					</DataGrid>
+					<Grid Grid.Row="1" Grid.Column="2">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"></ColumnDefinition>
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition></RowDefinition>
+							<RowDefinition></RowDefinition>
+						</Grid.RowDefinitions>
+						<Button Click="ButtonUp_Click" Grid.Column="1" Grid.Row="0" VerticalAlignment="Bottom" Margin="0,0,0,10" Height="Auto" >
+							<Image Width="16" Height="16" Source="Images/112_UpArrowShort_Blue_16x16_72.png"/>
+						</Button>
 					
-					<Button Grid.Column="1" Grid.Row="1" VerticalAlignment="Top" Height="Auto" Margin="0,10,0,0">
-						<Button.Content>
-							<Image Width="16" Height="16" Source="Images/112_DownArrowShort_Blue_16x16_72.png" />
-						</Button.Content>
-					</Button>
+						<Button Click="ButtonDown_Click"  Grid.Column="1" Grid.Row="1" VerticalAlignment="Top" Height="Auto" Margin="0,10,0,0">
+							<Button.Content>
+								<Image Width="16" Height="16" Source="Images/112_DownArrowShort_Blue_16x16_72.png" />
+							</Button.Content>
+						</Button>
+					</Grid>
+					<Button HorizontalAlignment="Right"  Width="100" Grid.Row="2" Grid.Column="0" Margin="0,0,10,0" Content="{x:Static prop:Resources.Buttons_New}" Click="ButtonNewAIRule_Click" />
+					<Button HorizontalAlignment="Left" Width="100" Content="{x:Static prop:Resources.Buttons_Delete}" Grid.Row="2" Grid.Column="1" Margin="10,0,0,0" Click="Button_DeleteAIRuleClick" />
+					<Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,0,0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="150" />
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition/>
+							<RowDefinition/>
+							<RowDefinition/>
+							<RowDefinition/>
+						</Grid.RowDefinitions>
+						<TextBlock Text="{x:Static prop:Resources.Options_AI_Airline}" Grid.Row="0" Grid.Column="0" Margin="5,5,0,0"></TextBlock>
+						<TextBox Name="textboxAirline" Margin="5,5,5,5" Grid.Row="0" Grid.Column="1"/>
+						<TextBlock Text="{x:Static prop:Resources.Options_AI_AirlineExample}" Margin="5,5,5,5" Grid.Row="0" Grid.Column="2" />
+						<TextBlock Text="{x:Static prop:Resources.Options_AI_Planetype}" Grid.Row="1" Grid.Column="0" Margin="5,5,0,0"/>
+						<TextBox Name="textboxPlaneType" Margin="5,5,5,5" Grid.Row="1" Grid.Column="1"/>
+						<TextBlock Text="{x:Static prop:Resources.Options_AI_PlanetypeExample}" Margin="5,5,5,5" Grid.Row="1" Grid.Column="2"/>
+						<TextBlock Text="{x:Static prop:Resources.Options_AI_Model}" Grid.Row="2" Grid.Column="0" Margin="5,5,0,0"/>
+						<TextBox Name="textboxModel" Grid.Row="2" Grid.Column="1" Margin="5,5,5,5"/>
+						<TextBlock Text="{x:Static prop:Resources.Options_AI_ModelExample}" Margin="5,5,5,10" Grid.Row="2" Grid.Column="2"/>
+						<TextBlock x:Name="tbRuleDescription" Margin="5,5,5,5" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3"/>
+					</Grid>
 				</Grid>
-				<Button HorizontalAlignment="Right"  Width="100" Grid.Row="2" Grid.Column="0" Margin="0,0,10,0" Content="{x:Static prop:Resources.Buttons_New}" />
-				<Button HorizontalAlignment="Left" Width="100" Content="{x:Static prop:Resources.Buttons_Cancel}" Grid.Row="2" Grid.Column="1" Margin="10,0,0,0"/>
-				<Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,0,0">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="150" />
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width="Auto"/>
-					</Grid.ColumnDefinitions>
-					<Grid.RowDefinitions>
-						<RowDefinition/>
-						<RowDefinition/>
-						<RowDefinition/>
-						<RowDefinition/>
-					</Grid.RowDefinitions>
-					<TextBlock Text="{x:Static prop:Resources.Options_AI_Airline}" Grid.Row="0" Grid.Column="0" Margin="5,5,0,0"></TextBlock>
-					<TextBox Name="textboxAirline" Margin="5,5,5,5" Grid.Row="0" Grid.Column="1"/>
-					<TextBlock Text="{x:Static prop:Resources.Options_AI_AirlineExample}" Margin="5,5,5,5" Grid.Row="0" Grid.Column="2" />
-					<TextBlock Text="{x:Static prop:Resources.Options_AI_Planetype}" Grid.Row="1" Grid.Column="0" Margin="5,5,0,0"/>
-					<TextBox Name="textboxPlaneType" Margin="5,5,5,5" Grid.Row="1" Grid.Column="1"/>
-					<TextBlock Text="{x:Static prop:Resources.Options_AI_PlanetypeExample}" Margin="5,5,5,5" Grid.Row="1" Grid.Column="2"/>
-					<TextBlock Text="{x:Static prop:Resources.Options_AI_Model}" Grid.Row="2" Grid.Column="0" Margin="5,5,0,0"/>
-					<TextBox Name="textboxModel" Grid.Row="2" Grid.Column="1" Margin="5,5,5,5"/>
-					<TextBlock Text="{x:Static prop:Resources.Options_AI_ModelExample}" Margin="5,5,5,10" Grid.Row="2" Grid.Column="2"/>
-					<TextBlock x:Name="tbRuleDescription" Margin="5,5,5,5" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3"/>
-				</Grid>
-			</Grid>
-		</TabItem>
-	</TabControl>
+			</TabItem>
+		</TabControl>
+		<Button Content="{x:Static prop:Resources.Buttons_Ok}" Margin="0,20,10,5" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom" Name="buttonOk"  MinWidth="75" IsDefault="True" Click="buttonOk_Click" />
+		<Button Content="{x:Static prop:Resources.Buttons_Cancel}" Margin="0,20,10,5" Grid.Row="1" Grid.Column="2" VerticalAlignment="Bottom" Name="buttonCancel" MinWidth="75" Click="buttonCancel_Click" />
+	</Grid>
 </Window>

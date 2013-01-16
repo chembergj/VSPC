@@ -91,6 +91,15 @@ namespace VSPC.UI.WPF.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete.
+        /// </summary>
+        public static string Buttons_Delete {
+            get {
+                return ResourceManager.GetString("Buttons_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to New.
         /// </summary>
         public static string Buttons_New {
@@ -105,15 +114,6 @@ namespace VSPC.UI.WPF.Properties {
         public static string Buttons_Ok {
             get {
                 return ResourceManager.GetString("Buttons_Ok", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Remove.
-        /// </summary>
-        public static string Buttons_Remove {
-            get {
-                return ResourceManager.GetString("Buttons_Remove", resourceCulture);
             }
         }
         
