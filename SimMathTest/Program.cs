@@ -37,7 +37,7 @@ namespace SimMathTest
             double bearing_to_wp = SimMath.bearing(currentWp.Latitude, currentWp.Longitude,
                                                newWp.Latitude, newWp.Longitude);
 
-            uint heading_rate = SimMath.slew_turn_rate(bearing_to_wp, currentWp.Heading, newWp.Heading, currentWp.GroundSpeed);
+            uint heading_rate = SimMath.slew_turn_rate(bearing_to_wp, currentWp.Heading, newWp.Heading, currentWp.GroundSpeed, false);
 
             var period = (newWp.Timestamp - currentWp.Timestamp).TotalSeconds;
 

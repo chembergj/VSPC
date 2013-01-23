@@ -26,8 +26,8 @@ namespace VSPC.Core.Test
         [Test]
         public void TestReceiveSubscribed()
         {
-            var msg = new TrafficPositionReportMessage() { Altitude = 1234 };
-            var msg2 = new TrafficPositionReportMessage() { Altitude = 4567 };
+            var msg = new TrafficPositionReportMessage() { TrueAltitude = 1234 };
+            var msg2 = new TrafficPositionReportMessage() { TrueAltitude = 4567 };
             
             var handler = new Mock<IVSPCMessageHandler>();
             broker.Subscribe(handler.Object, typeof(TrafficPositionReportMessage));
@@ -38,7 +38,7 @@ namespace VSPC.Core.Test
         [Test]
         public void TestReceiveSubscribedMultipleReceivers()
         {
-            var msg = new TrafficPositionReportMessage() { Altitude = 1234 };
+            var msg = new TrafficPositionReportMessage() { TrueAltitude = 1234 };
 
             var handler1 = new Mock<IVSPCMessageHandler>();
             var handler2 = new Mock<IVSPCMessageHandler>();
