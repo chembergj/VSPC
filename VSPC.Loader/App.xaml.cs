@@ -6,8 +6,6 @@ using System.Windows;
 using System.Reflection;
 using VSPC.Core;
 using VSPC.Loader.Config;
-using System.Windows.Interop;
-using System.Windows.Threading;
 
 namespace VSPC.Loader
 {

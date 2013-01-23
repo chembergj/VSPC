@@ -46,7 +46,7 @@
     
     mimetype: application/x-microsoft.net.object.binary.base64
     value   : The object must be serialized with 
-            : System.Serialization.Formatters.Binary.BinaryFormatter
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
     
     mimetype: application/x-microsoft.net.object.soap.base64
@@ -60,6 +60,7 @@
             : and then encoded with base64 encoding.
     -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
@@ -68,9 +69,10 @@
               <xsd:sequence>
                 <xsd:element name="value" type="xsd:string" minOccurs="0" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="name" use="required" type="xsd:string" />
               <xsd:attribute name="type" type="xsd:string" />
               <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
@@ -85,9 +87,10 @@
                 <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
                 <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
               <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
               <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
@@ -109,9 +112,94 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="MainWindow_ConnectedFSim" xml:space="preserve">
+    <value>Connection to flight simulator OK</value>
+  </data>
+  <data name="MainWindow_ConnectedVatsim" xml:space="preserve">
+    <value>Connection to Vatsim OK</value>
+  </data>
+  <data name="MainWindow_ConnectingToFSim" xml:space="preserve">
+    <value>Connecting to flight simulator...</value>
+  </data>
+  <data name="MainWindow_ConnectingToVatsim" xml:space="preserve">
+    <value>Connecting to Vatsim...</value>
+  </data>
+  <data name="MainWindow_NoConnectionFSim" xml:space="preserve">
+    <value>No connection to flight simulator</value>
+  </data>
+  <data name="MainWindow_NoConnectionVatsim" xml:space="preserve">
+    <value>No connection to Vatsim</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="options" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\options.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Options_AI_Header" xml:space="preserve">
+    <value>AI Models</value>
+  </data>
+  <data name="Options_Conn_CID" xml:space="preserve">
+    <value>CID:</value>
+  </data>
+  <data name="Options_Conn_Header" xml:space="preserve">
+    <value>Connection</value>
+  </data>
+  <data name="Options_Conn_Password" xml:space="preserve">
+    <value>Password:</value>
+  </data>
+  <data name="Options_Conn_Realname" xml:space="preserve">
+    <value>Real name:</value>
+  </data>
+  <data name="Options_Conn_Server" xml:space="preserve">
+    <value>Server:</value>
+  </data>
+  <data name="_109_AllAnnotations_Default_16x16_72" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\109_AllAnnotations_Default_16x16_72.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_109_AllAnnotations_Error_16x16_72" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\109_AllAnnotations_Error_16x16_72.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_109_AllAnnotations_Warning_16x16_72" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\109_AllAnnotations_Warning_16x16_72.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Buttons_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Buttons_Ok" xml:space="preserve">
+    <value>Ok</value>
+  </data>
+  <data name="Buttons_New" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="Buttons_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Options_AI_Airline" xml:space="preserve">
+    <value>Airline:</value>
+  </data>
+  <data name="Options_AI_AirlineExample" xml:space="preserve">
+    <value>(ex. 'NAX', 'SAS', 'DLH')</value>
+  </data>
+  <data name="Options_AI_Listheader" xml:space="preserve">
+    <value>Prioritized list of rules for AI model matching:</value>
+  </data>
+  <data name="Options_AI_Model" xml:space="preserve">
+    <value>Model:</value>
+  </data>
+  <data name="Options_AI_ModelExample" xml:space="preserve">
+    <value>(ex. 'Beech King Air 350 Paint1')</value>
+  </data>
+  <data name="Options_AI_Planetype" xml:space="preserve">
+    <value>Plane type:</value>
+  </data>
+  <data name="Options_AI_PlanetypeExample" xml:space="preserve">
+    <value>(ex. 'B738','C172')</value>
+  </data>
+  <data name="Options_AI_RuleDescription" xml:space="preserve">
+    <value>Rule description:</value>
+  </data>
 </root>

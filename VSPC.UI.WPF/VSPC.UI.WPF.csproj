@@ -10,9 +10,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VSPC.UI.WPF</RootNamespace>
     <AssemblyName>VSPC.UI.WPF</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -57,6 +58,8 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -73,6 +76,11 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -106,15 +114,30 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\options.jpg" />
+    <Resource Include="Images\109_AllAnnotations_Default_16x16_72.png" />
+    <Resource Include="Images\109_AllAnnotations_Warning_16x16_72.png" />
+    <Resource Include="Images\109_AllAnnotations_Error_16x16_72.png" />
+    <Resource Include="Images\112_DownArrowShort_Blue_16x16_72.png" />
+    <Resource Include="Images\112_UpArrowShort_Blue_16x16_72.png" />
     <Content Include="speaker.png" />
     <Content Include="Vatsim.png" />
     <Resource Include="weather_cloudy.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\VSPC.Common\VSPC.Common.csproj">
+      <Project>{4A9A5A81-2BB4-4E13-899D-D07C8AC4F278}</Project>
+      <Name>VSPC.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\VSPC.Core\VSPC.Core.csproj">
       <Project>{0850F789-0671-4C7A-BF77-99197DAC1979}</Project>
       <Name>VSPC.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
