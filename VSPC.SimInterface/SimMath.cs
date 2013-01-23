@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NLog;
 
 namespace VSPC.SimInterface
 {
@@ -9,7 +10,7 @@ namespace VSPC.SimInterface
     {
         public double Latitude { get; set; }  // (PLANE LATITUDE, degrees) north positive
         public double Longitude { get; set; } // (PLANE LONGITUDE, degrees) east positive
-        public double Altitude { get; set; }  // (PLANE ALTITUDE, Meters) 
+        public double Altitude { get; set; }  // (PLANE ALTITUDE, Feet) 
         public double Pitch { get; set; }     // (PLANE PITCH DEGREES, radians)
         public double Bank { get; set; }      // (PLANE BANK DEGREES, radians)
         public double Heading { get; set; }   // (PLANE HEADING DEGREES TRUE, radians)
@@ -17,6 +18,7 @@ namespace VSPC.SimInterface
         public Int32 zulu_time { get; set; }         // (ZULU TIME, seconds) seconds since midnight UTC
         public double IASpeed { get; set; }     // forward speed, meters per second
         public double GroundSpeed { get; set; }     // forward speed, meters per second
+        public bool OnGround { get; set; }      
     };
 
 
@@ -25,14 +27,25 @@ namespace VSPC.SimInterface
     /// </summary>
     public class SimMath
     {
-        const double M_PI = Math.PI;
         const double EARTH_RAD = 6366710.0; // earth's radius in meters
 
         const double ini_pitch_offset = 0; // pitch adjustment to apply to AI aircraft
         const double ini_pitch_min = -0.3; // max low-speed pitch in radians (negative)
         const double ini_pitch_max = 0.1; // max high-speed pitch in radians (positive) 
         const double ini_pitch_v_zero = 30; // speed in m/s for pitch=0;
-        const uint MINIMUM_GS_WITHOUT_RATELIMITS = 5;   // Below this speed, slew rates will be reduced
+        const uint MINIMUM_GS_WITHOUT_RATELIMITS = 0;   // Below this speed, slew rates will be reduced
+        static Logger logger = null;
+
+        static Logger Logger
+        {
+            get
+            {
+                if (logger == null)
+                    logger = LogManager.GetCurrentClassLogger();
+
+                return logger;
+            }
+        }
 
         #region Conversion methods
 
@@ -57,19 +70,32 @@ namespace VSPC.SimInterface
         // convert degrees to radians
         public static double deg2rad(double deg)
         {
-            return deg * (M_PI / 180.0);
+            return deg * (Math.PI / 180.0);
         }
 
         // convert radians to degrees
         public static double rad2deg(double rad)
         {
-            return rad * (180.0 / M_PI);
+            return rad * (180.0 / Math.PI);
         }
 
         // convert meters to feet (for initposition)
         public static double m2ft(double m)
         {
             return m * 3.2808399;
+        }
+
+        // convert meters to feet (for initposition)
+        public static double ft2m(double ft)
+        {
+            return ft * 0.3048;
+        }
+
+
+
+        public static double knotsToMetersPerSecond(double kts)
+        {
+            return 0.514444444444444 * kts;
         }
 
         #endregion
@@ -83,8 +109,8 @@ namespace VSPC.SimInterface
             double lon1 = deg2rad(lon1d);
             double lat2 = deg2rad(lat2d);
             double lon2 = deg2rad(lon2d);
-            return (Math.Atan2(Math.Sin(lon2 - lon1) * Math.Cos(lat2), Math.Cos(lat1) * Math.Sin(lat2) - Math.Sin(lat1) * Math.Cos(lat2) * Math.Cos(lon2 - lon1)) + 2 * M_PI) %
-                                (2 * M_PI);
+            return (Math.Atan2(Math.Sin(lon2 - lon1) * Math.Cos(lat2), Math.Cos(lat1) * Math.Sin(lat2) - Math.Sin(lat1) * Math.Cos(lat2) * Math.Cos(lon2 - lon1)) + 2 * Math.PI) %
+                                (2 * Math.PI);
         }
 
         // distance (m) on earth's surface from point 1 to point 2
@@ -113,8 +139,8 @@ namespace VSPC.SimInterface
         public static double heading_delta(double desired, double current)
         {
             double angle;
-            angle = (desired - current + 2 * M_PI) % (2 * M_PI);
-            return (angle > M_PI) ? angle - 2 * M_PI : angle;
+            angle = (desired - current + 2 * Math.PI) % (2 * Math.PI);
+            return (angle > Math.PI) ? angle - 2 * Math.PI : angle;
         }
 
         //*********************************************************************************************
@@ -137,7 +163,7 @@ namespace VSPC.SimInterface
             }
             else
             {
-                rlong2 = ((rlong1 + Math.Asin(Math.Sin(rbearing) * Math.Sin(rdistance) / Math.Cos(rlat2)) + M_PI) % (2 * M_PI)) - M_PI;
+                rlong2 = ((rlong1 + Math.Asin(Math.Sin(rbearing) * Math.Sin(rdistance) / Math.Cos(rlat2)) + Math.PI) % (2 * Math.PI)) - Math.PI;
             }
             r.Latitude = rad2deg(rlat2);
             r.Longitude = rad2deg(rlong2);
@@ -171,7 +197,7 @@ namespace VSPC.SimInterface
 
             double new_heading1 = bearing1 + heading_correction1;
             double new_heading_delta1 = heading_delta(bearing1, new_heading1);
-            double speed_correction1 = (1 + (1 - 2 / M_PI) * Math.Abs(new_heading_delta1));
+            double speed_correction1 = (1 + (1 - 2 / Math.PI) * Math.Abs(new_heading_delta1));
             double distance_to_interp1 = speed1 * step_time * speed_correction1;
 
             Waypoint r = distance_and_bearing(p1, distance_to_interp1, new_heading1);
@@ -194,10 +220,13 @@ namespace VSPC.SimInterface
             // reduce rates depending on the current groundspeed
             // without a limit, the plane makes rather hard turns/banks/pitches at low speeds
 
+            
             if (current_groundspeed < MINIMUM_GS_WITHOUT_RATELIMITS)
             {
-                rate = Math.Min(rate, 100);
-                rate = (uint)Math.Max((int)rate, -100);
+                var limit = (uint)current_groundspeed * 100;
+
+                rate = Math.Min(rate, limit);
+                rate = (uint)Math.Max((int)rate, -limit);
             }
 
             return rate;
@@ -218,17 +247,16 @@ namespace VSPC.SimInterface
 
         //*********************************************************************************************
         // which heading should object be at to approach on correct target heading
-        public static double desired_heading(double bearing_to_wp, double target_heading)
+        // coefficient = how much weight should the bearing_to_wp have compared to the weight of target_heading
+        public static double desired_heading(double bearing_to_wp, double target_heading, double coefficient = 0.1)
         {
             double heading;
-            double coefficient;
 
-            coefficient = 0.5;
+            // original: heading = bearing_to_wp - coefficient * heading_delta(target_heading, bearing_to_wp);
+            heading = bearing_to_wp + coefficient * heading_delta(target_heading, bearing_to_wp);
+            heading = heading + 2 * Math.PI;
 
-            heading = bearing_to_wp - coefficient * heading_delta(target_heading, bearing_to_wp);
-            heading = heading + 2 * M_PI;
-
-            return heading % (2 * M_PI);
+            return heading % (2 * Math.PI);
         }
 
         //*********************************************************************************************
@@ -257,7 +285,7 @@ namespace VSPC.SimInterface
             //const double PITCH_MIN = -0.3; // pitch at min speed i.e. max pitch nose UP
             //const double PITCH_MAX = 0.18; // pitch at max speed
 
-            double C = -2 * ini_pitch_min / M_PI;
+            double C = -2 * ini_pitch_min / Math.PI;
             double X = Math.Tan(ini_pitch_max / C);
 
             speed_pitch = C * Math.Atan(X * (1 - ini_pitch_v_zero / speed)) + ini_pitch_offset;
@@ -270,24 +298,94 @@ namespace VSPC.SimInterface
         }
 
         // what rate should object change heading at
-        public static uint slew_turn_rate(double bearing_to_wp, double current_heading, double target_heading, double current_groundspeed)
+        public static uint slew_turn_rate(double bearing_to_wp, double current_heading, double target_heading, double current_groundspeed, bool slowingToParkModeAndLastFrame)
         {
             double desired;
             double coefficient;
 
-            coefficient = 0.65;
+            // if (current_groundspeed <= 3)    // Don't change heading below 3 m/s, it is probably just a calc. error
+                //return 0;
 
-            desired = desired_heading(bearing_to_wp, target_heading);
+            coefficient = 0.85;
+
+            desired = desired_heading(bearing_to_wp, target_heading, slowingToParkModeAndLastFrame ? 0.9 : 0.1);
 
             // note minus in front of coefficient - +ve turn reduces heading!
             return slew_rotation_to_rate(-coefficient * heading_delta(desired, current_heading), current_groundspeed);
         }
 
+        public static double averageSpeed(double lat1, double lon1, double lat2, double lon2, double time_to_go)
+        {
+            return distance(lat1, lon1, lat2, lon2) / time_to_go;
+        }
 
         // what rate to set ahead slew should object move to arrive at correct time
         public static uint slew_ahead_rate(double lat1, double lon1, double lat2, double lon2, double time_to_go)
         {
-            double speed = distance(lat1, lon1, lat2, lon2) / time_to_go;
+            double speed = averageSpeed(lat1, lon1, lat2, lon2, time_to_go);
+            return slew_ahead_to_rate(speed);
+        }
+
+        static double sum(double times)
+        {
+            double sum = 0;
+            for (int i = 0; i < times; i++)
+                sum += i;
+            if (times % 2 != 0)
+                sum += ((double)(times % 2)) / 2.0;
+
+            return sum;
+        }
+
+        static double correctionFactor;
+        static double avgSpeed;
+        // what rate to set ahead slew should object move to arrive at correct time
+        public static uint slew_ahead_rate_experimental(string callsign, Waypoint currentWp, Waypoint newWp, uint time_to_go)
+        {
+            var distance = SimMath.distance(currentWp.Latitude, currentWp.Longitude, newWp.Latitude, newWp.Longitude);
+            double speed;
+            if (newWp.GroundSpeed == 0)
+            {
+                
+                avgSpeed = SimMath.averageSpeed(currentWp.Latitude, currentWp.Longitude, newWp.Latitude, newWp.Longitude, time_to_go);
+
+                if ((currentWp.GroundSpeed <= avgSpeed && avgSpeed <= newWp.GroundSpeed)
+                   || (newWp.GroundSpeed <= avgSpeed && avgSpeed <= currentWp.GroundSpeed))
+                {
+                    correctionFactor = (distance - time_to_go * currentWp.GroundSpeed) / (double)sum(time_to_go);
+                }
+                else
+                    correctionFactor = 0;
+            }
+
+            // Linear approximation to make speed corrections more smooth
+            
+            if (time_to_go > 1)
+            {
+                    speed = currentWp.GroundSpeed + correctionFactor;
+                    Logger.Debug(string.Format("{0} averaging speed (case 1): avgspeed: {1} corrected speed: {2}  distance: {3}", callsign, avgSpeed, speed, distance));
+            }
+            else
+            {
+                speed = SimMath.averageSpeed(currentWp.Latitude, currentWp.Longitude, newWp.Latitude, newWp.Longitude, 1);
+            }
+                /*else if ((currentWp.GroundSpeed <= avgSpeed && newWp.GroundSpeed <= avgSpeed)
+                    || (newWp.GroundSpeed <= avgSpeed && currentWp.GroundSpeed <= avgSpeed))
+                {
+                    // Average speed either below or above start and end speed, we have to calculate a linear max/min speed to average the speed for the entire period
+                    // Split the period in two, and make an averaged speed increase/decrease to vm first half, and then the opposite in/decrease last half.
+                    double vm = (4.0 * distance / (double)time_to_go - currentWp.GroundSpeed - newWp.GroundSpeed) / 2.0;
+                    double firsthalf_distance = currentWp.GroundSpeed * time_to_go / 2.0 + (vm - currentWp.GroundSpeed) * time_to_go / 2.0 / 2.0;
+                    double correctionFactor = (firsthalf_distance - time_to_go / 2.0 * currentWp.GroundSpeed) / (double)sum(time_to_go / 2.0);
+                    speed = currentWp.GroundSpeed + correctionFactor;
+                    Logger.Debug(string.Format("{0} averaging speed (case 2): avgspeed: {1} corrected speed: {2}", callsign, avgSpeed, speed));
+                }
+                else
+                {
+                    Logger.Debug(string.Format("{0} no averaging speed: avgspeed: {1}  distance: {2}", callsign, avgSpeed, distance));
+                }*/
+            
+
             return slew_ahead_to_rate(speed);
         }
 
@@ -333,8 +431,8 @@ namespace VSPC.SimInterface
                                               p[i - 2].Longitude,
                                               p[i - 1].Latitude,
                                               p[i - 1].Longitude);
-                double bearing_delta = (this_bearing + 2 * M_PI - prev_bearing) % (2 * M_PI);
-                if (bearing_delta > M_PI) bearing_delta = bearing_delta - 2 * M_PI;
+                double bearing_delta = (this_bearing + 2 * Math.PI - prev_bearing) % (2 * Math.PI);
+                if (bearing_delta > Math.PI) bearing_delta = bearing_delta - 2 * Math.PI;
                 double turn_radians_per_second = bearing_delta / (p[i].zulu_time - p[i - 1].zulu_time);
                 p[i].Bank = -turn_radians_per_second * 4;
                 p[i].Bank = Math.Min(p[i].Bank, 1.5);
@@ -344,7 +442,13 @@ namespace VSPC.SimInterface
         */
         public static bool AIAircraftIsParked(Waypoint currentWp, Waypoint newWp)
         {
-            return distance(currentWp.Latitude, currentWp.Longitude, newWp.Latitude, newWp.Longitude) < 0.001;
+            return distance(currentWp.Latitude, currentWp.Longitude, newWp.Latitude, newWp.Longitude) < 1;
         }
+
+        public static bool AIAircraftIsPushingBack(Waypoint currentWp, Waypoint newWp, uint heading_rate)
+        {
+            return false;
+            // return Math.Abs((int)heading_rate) > 2000 && newWp.GroundSpeed < SimMath.knotsToMetersPerSecond(10) && Math.Abs(SimMath.heading_delta(newWp.Heading, currentWp.Heading)) < DegreeToRadian(30);
+        } 
     }
 }

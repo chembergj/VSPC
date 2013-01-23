@@ -117,8 +117,8 @@ namespace VSPC.FSD
 
         void fsdSession_PilotPositionReceived(object sender, DataReceivedEventArgs<PDUPilotPosition> e)
         {
-            Logger.Info(string.Format("Pilot pos received: Lat, Long: {0},{1}, GS: {2}, hdg: {3}, bank: {4}, pitch: {5}, press.alt: {6}, truealt: {7}", e.PDU.Lat.ToString("####0.00000000"), e.PDU.Lon.ToString("####0.00000000"), e.PDU.GroundSpeed, e.PDU.Heading, e.PDU.Bank, e.PDU.Pitch, e.PDU.PressureAltitude, e.PDU.TrueAltitude));
-            var msg = new TrafficPositionReportMessage() { Sender = e.PDU.From, Altitude = e.PDU.TrueAltitude, BankAngle = e.PDU.Bank, Groundspeed = e.PDU.GroundSpeed, Heading = e.PDU.Heading, Latitude = e.PDU.Lat, Longitude = e.PDU.Lon, Pitch = e.PDU.Pitch };
+            var msg = new TrafficPositionReportMessage() { ReceiveTime = DateTime.Now, Sender = e.PDU.From, TrueAltitude = e.PDU.TrueAltitude, PressureAltitude = e.PDU.PressureAltitude, BankAngle = e.PDU.Bank, Groundspeed = e.PDU.GroundSpeed, Heading = e.PDU.Heading, Latitude = e.PDU.Lat, Longitude = e.PDU.Lon, Pitch = e.PDU.Pitch };
+            Logger.Info(string.Format("Pilot pos received: Lat, Long: {0},{1}, GS: {2}, hdg: {3} dgr ({8} rad), bank: {4}, pitch: {5}, press.alt: {6}, truealt: {7}", e.PDU.Lat.ToString("####0.00000000"), e.PDU.Lon.ToString("####0.00000000"), e.PDU.GroundSpeed, e.PDU.Heading, e.PDU.Bank, e.PDU.Pitch, e.PDU.PressureAltitude, e.PDU.TrueAltitude, e.PDU.Heading * (Math.PI / 180.0)));
             broker.Publish(msg);
         }
 
@@ -269,7 +269,7 @@ namespace VSPC.FSD
         {
             if (context.FSDIsConnected && fsdSession.Connected)
                 // TODO: TrueAlt + PressureAlt
-                fsdSession.SendPDU(new PDUPilotPosition(context.Callsign, positionReportMessage.Transponder, positionReportMessage.SquawkingCharlie, positionReportMessage.Identing, NetworkRating.OBS, positionReportMessage.Latitude, positionReportMessage.Longitude, (int)Math.Round(positionReportMessage.Altitude), (int)Math.Round(positionReportMessage.Altitude), (int)Math.Round(positionReportMessage.Groundspeed), (int)Math.Round(positionReportMessage.Pitch), (int)Math.Round(positionReportMessage.Bank), (int)Math.Round(positionReportMessage.Heading)));
+                fsdSession.SendPDU(new PDUPilotPosition(context.Callsign, positionReportMessage.Transponder, positionReportMessage.SquawkingCharlie, positionReportMessage.Identing, NetworkRating.OBS, positionReportMessage.Latitude, positionReportMessage.Longitude, (int)Math.Round(positionReportMessage.TrueAltitude), (int)Math.Round(positionReportMessage.PressureAltitude), (int)Math.Round(positionReportMessage.Groundspeed), (int)Math.Round(positionReportMessage.Pitch), (int)Math.Round(positionReportMessage.Bank), (int)Math.Round(positionReportMessage.Heading)));
         }
 
         void fsdSession_ATCPositionReceived(object sender, DataReceivedEventArgs<PDUATCPosition> e)
