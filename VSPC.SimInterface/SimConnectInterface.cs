@@ -23,14 +23,18 @@ namespace VSPC.SimInterface
             Callsign = callsign;
         }
 
+        public uint AICounter { get; set; }
         public uint SimConnectObjectId { get; set; }
         public string Callsign { get; protected set; }
-        
+
+        // True if we are currently moving, but next waypoint says GS=0
+        public bool SlowingDownForParkingMode { get; set; } 
+
         // Present target waypoint the plane is aiming for
         public Waypoint TargetWaypoint { get; protected set; }
         
         // Remaining seconds, until we reach the Target Waypoint (approx., only in case network trf.pos. arrives at exact intervals)
-        public ushort RemainingSecondsUntilTarget { get; set; }
+        public double RemainingSecondsUntilTarget { get; set; }
 
         // Set new target and reset "timer"
         public void SetTargetWaypoint(Waypoint wp)
@@ -55,12 +59,14 @@ namespace VSPC.SimInterface
             PositionReportStruct,
             PositionUpdateStruct,
             AIPositionUpdateStruct,
+            AIMoveStruct,
+            AISetAltAboveGroundStruct
         }
 
         enum SIMCONNECT_EVENTS
         {
             EVENTID_POSITIONREPORT,
-            EVENTID_POSITIONREPORT_FOR_AIUPDATE,
+            EVENTID_AIRELEASEATC,
 
             // Slew events
             EVENTID_SLEW_ON,
@@ -70,8 +76,12 @@ namespace VSPC.SimInterface
             EVENTID_AXIS_SLEW_PITCH_SET,
             EVENTID_AXIS_SLEW_AHEAD_SET,
             EVENTID_DEFINITION_AI_MOVE,
+            EVENTID_SLEW_RESET,
 
-            EVENTID_SETAIAC = 10000,
+
+            EVENTID_SETAIAC = 100000,
+
+            EVENTID_POSITIONREPORT_FOR_AIUPDATE = 200000
         };
 
         enum GROUP_PRIORITIES : uint
@@ -96,6 +106,9 @@ namespace VSPC.SimInterface
         // Expected interval between traffic reports from vatsim
         public const int SECONDS_BETWEEN_POSITIONREPORTS_FROM_NETWORK = 5;
 
+        // if speed exceeds this value, don't bother to slew the plane over there, just move him right away
+        const int MAX_SPEED_BEFORE_WARP = 1543; // = 3000kts
+
         // Counter + lock for keeping track of request id for new AI traffic
         uint AICounter = 0;
         object AICounterLock = 0;
@@ -112,10 +125,11 @@ namespace VSPC.SimInterface
         // SimConnect object
         SimConnect simconnect = null;
 
-
         #endregion  
 
         #region Properties 
+
+        
 
         Logger Logger
         {
@@ -139,7 +153,8 @@ namespace VSPC.SimInterface
         {
             public double latitude;
             public double longitude;
-            public double altitude;
+            public double truealtitude;
+            public double pressurealtitude;
             public double groundspeed;
             public double pitch;        // Degrees
             public double bank;         // Degrees
@@ -153,11 +168,33 @@ namespace VSPC.SimInterface
         {
             public double latitude;
             public double longitude;
-            public double altitude;
+            public double truealtitude;
             public double groundspeed;
             public double pitch;        // Radians
             public double bank;         // Radians
             public double heading;      // Radians
+            public double simOnGround;
+            public double altAboveGround;      
+        };
+
+        // Struct used for moving AI plane
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+        struct AIMoveStruct
+        {
+            public double latitude;
+            public double longitude;
+            public double truealtitude;
+            public double pitch;        // Radians
+            public double bank;         // Radians
+            public double heading;      // Radians
+            
+        };
+
+        // Struct used for handling AI plane on the ground
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+        struct AIAltAboveGroundStruct
+        {
+            public double altAboveGround;
         };
 
         #endregion  
@@ -204,14 +241,22 @@ namespace VSPC.SimInterface
 
         private void HandleTrafficPositionReport(TrafficPositionReportMessage trafficPositionReportMessage)
         {
-            if (CallsignToAIPlaneMap.ContainsKey(trafficPositionReportMessage.Sender))
-            {
-                UpdateExisitingAIData(trafficPositionReportMessage);
-            }
-            else
-            {
-                CreateNewAIAircraft(trafficPositionReportMessage);
+            var origCallsign = trafficPositionReportMessage.Sender;
 
+            // for (int i = 1; i < 10; i++)
+            {
+                // trafficPositionReportMessage.Sender = origCallsign + ("-" + i);
+                // trafficPositionReportMessage.Longitude += 0.0003;
+
+                if (CallsignToAIPlaneMap.ContainsKey(trafficPositionReportMessage.Sender))
+                {
+                    UpdateExisitingAIData(trafficPositionReportMessage);
+                }
+                else
+                {
+                    CreateNewAIAircraft(trafficPositionReportMessage);
+
+                }
             }
         }
 
@@ -231,7 +276,7 @@ namespace VSPC.SimInterface
                 // TODO: OnGround + airspeed
                 var initpos = new SIMCONNECT_DATA_INITPOSITION()
                 {
-                    Altitude = trafficPositionReportMessage.Altitude,
+                    Altitude = trafficPositionReportMessage.TrueAltitude,
                     Bank = -trafficPositionReportMessage.BankAngle,
                     Heading = trafficPositionReportMessage.Heading,
                     Latitude = trafficPositionReportMessage.Latitude,
@@ -242,10 +287,11 @@ namespace VSPC.SimInterface
                 };
 
                 simconnect.AICreateNonATCAircraft(GetRepaintTitle(),  trafficPositionReportMessage.Sender, initpos, (SIMCONNECT_EVENTS)((uint)SIMCONNECT_EVENTS.EVENTID_SETAIAC + counter));
+                // simconnect.AICreateSimulatedObject(GetRepaintTitle(), initpos, (SIMCONNECT_EVENTS)((uint)SIMCONNECT_EVENTS.EVENTID_SETAIAC + counter));
 
                 var aiplane = new AIPlane(trafficPositionReportMessage.Sender);
-                aiplane.SetTargetWaypoint(CreateWaypointFromTrafficPositionReportMsg(trafficPositionReportMessage, DateTime.Now));
-
+                aiplane.SetTargetWaypoint(CreateWaypointFromTrafficPositionReportMsg(trafficPositionReportMessage));
+                aiplane.AICounter = counter;
                 CallsignToAIPlaneMap.Add(aiplane.Callsign, aiplane);
             }
             catch (COMException e)
@@ -257,15 +303,17 @@ namespace VSPC.SimInterface
         // Much much much more work to be done here, but for now, let's make life easy
         private string GetRepaintTitle()
         {
-            return "Beech King Air 350 Paint1";
+            return "Cessna Skyhawk 172SP Paint1";
         }
 
         private void UpdateExisitingAIData(TrafficPositionReportMessage msg)
         {
-            const double AI_WARP_TIME = 30; // if current AI point is 30 seconds old, then MOVE not SLEW
-
             var AIAircraft = CallsignToAIPlaneMap[msg.Sender];
-            AIAircraft.SetTargetWaypoint(CreateWaypointFromTrafficPositionReportMsg(msg, DateTime.Now.AddSeconds(SECONDS_BETWEEN_POSITIONREPORTS_FROM_NETWORK)));
+
+            // Sync AI data for this airplane with receival of position reports, 1) Cancel it 2) Restart it
+            // simconnect.RequestDataOnSimObject((SIMCONNECT_EVENTS)((uint)SIMCONNECT_EVENTS.EVENTID_POSITIONREPORT_FOR_AIUPDATE + AIAircraft.AICounter), DEFINITIONS.AIPositionUpdateStruct, AIAircraft.SimConnectObjectId, SIMCONNECT_PERIOD.SECOND, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, uint.MaxValue, uint.MaxValue, 0);
+            AIAircraft.SetTargetWaypoint(CreateWaypointFromTrafficPositionReportMsg(msg));
+            // simconnect.RequestDataOnSimObject((SIMCONNECT_EVENTS)((uint)SIMCONNECT_EVENTS.EVENTID_POSITIONREPORT_FOR_AIUPDATE + AIAircraft.AICounter), DEFINITIONS.AIPositionUpdateStruct, AIAircraft.SimConnectObjectId, SIMCONNECT_PERIOD.SECOND, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 1, 0);
 
             // Nothing more to do here, the next AI position update event from SimConnect will use the new waypoint
         }
@@ -323,160 +371,232 @@ namespace VSPC.SimInterface
         /// Set the new waypoint and reset the timer-counter
         /// </summary>
         /// <param name="msg"></param>
-        
 
-        private void CalculateSlewAI(uint AIPlaneSimConnectId, AIPositionReportStruct posreport)
+
+        private void HandleAIPositionReport(uint AIPlaneSimConnectId, AIPositionReportStruct posreport)
         {
             var AIAircraft = CallsignToAIPlaneMap.Where(keyvalue => keyvalue.Value.SimConnectObjectId == AIPlaneSimConnectId).First().Value;
-            var currentWp = CreateWaypointFromPositionReportStruct(ref posreport, DateTime.Now);
+            var currentWp = CreateWaypointFromAIPositionReportStruct(ref posreport, DateTime.Now);
             var newWp = AIAircraft.TargetWaypoint;
 
-            /*
-            double progress = 1;
-            predict_point.Latitude = r[j - 1].latitude + progress * (r[j].latitude - r[j - 1].latitude);
-            predict_point.Longitude = r[j - 1].longitude + progress * (r[j].longitude - r[j - 1].longitude);
-            // include alt_offset in alt calc
-            predict_point.Altitude = r[j - 1].altitude + progress * (r[j].altitude - r[j - 1].altitude) + ai_info[ai_index].alt_offset;
-            predict_point.Heading = SimMath.bearing(r[j - 1].latitude, r[j - 1].longitude, r[j].latitude, r[j].longitude);
-            
-            if (pos.sim_on_ground)
-            {
-                // ON GROUND, so we can calibrate the IGC file alts with an offset
-                // temporarily disabled while I think about the issues...
-                //ai_info[ai_index].alt_offset = pos.altitude - r[j-1].altitude;
-                //if (debug) printf("%s alt_offset %.1f\n",ai_info[ai_index].atc_id, ai_info[ai_index].alt_offset);
-                predict_point.Pitch = 0;
-                predict_point.Bank = 0;
-            }
-            else
-            {
-                predict_point.Bank = r[j - 1].bank + progress * (r[j].bank - r[j - 1].bank);
-                predict_point.Pitch = r[j - 1].pitch + progress * (r[j].pitch - r[j - 1].pitch);
-            }
-             */
-            // now calculate steering deltas based on predict point
+            Logger.Debug(AIAircraft.Callsign + " pitch: " + posreport.pitch.ToString() + " on gnd: " + posreport.simOnGround.ToString() + " alt above gnd: " + posreport.altAboveGround.ToString());
+
 
             if (AIAircraft.IsTargetWaypointStale())
             {
                 Logger.Debug(AIAircraft.Callsign + " has stale target waypoint");
             }
-            else if (!SimMath.AIAircraftIsParked(currentWp, newWp))
+            else if (SimMath.AIAircraftIsParked(currentWp, newWp))
             {
-
-                double bearing_to_wp = SimMath.bearing(currentWp.Latitude, currentWp.Longitude,
-                                               newWp.Latitude, newWp.Longitude);
-
-                uint heading_rate = SimMath.slew_turn_rate(bearing_to_wp, currentWp.Heading, newWp.Heading);
-
-                var period = AIAircraft.RemainingSecondsUntilTarget;
-                AIAircraft.RemainingSecondsUntilTarget--;
-
-                uint ahead_rate = SimMath.slew_ahead_rate(currentWp.Latitude, currentWp.Longitude,
-                                               newWp.Latitude, newWp.Longitude,
-                                               period);
-
-                uint bank_rate = SimMath.slew_rotation_to_rate((newWp.Bank - currentWp.Bank) / period);
-
-                uint pitch_rate = SimMath.slew_rotation_to_rate((newWp.Pitch - currentWp.Pitch) / period);
-
-                uint alt_rate = SimMath.slew_alt_to_rate((currentWp.Altitude - newWp.Altitude) / period);
-
-                //debug - print lat longs for excel analysis
-                // time,lat,lon,alt,pitch,bank,heading,ahead rate, alt rate, pitch rate, bank rate, heading rate
-
-                Logger.Debug(string.Format("CURRENT WP: La {0}, Lo {1}, Alt {2}, Pi {3}, Ba {4}, Hdg {5}, GS: {6}",
-                                   currentWp.Latitude.ToString("####0.00000000"),
-                                   currentWp.Longitude.ToString("####0.00000000"),
-                                   currentWp.Altitude,
-                                   currentWp.Pitch,
-                                   currentWp.Bank,
-                                   currentWp.Heading,
-                                   currentWp.GroundSpeed
-                                   ));
-
-                Logger.Debug(string.Format("NEW WP: La {0}, Lo {1}, Alt {2}, Pi {3}, Ba {4}, Hdg {5}, GS {11}, Ahead rt {6}, Alt rt {7}, Pi rt {8}, Ba rt {9}, Hdg rt {10}",
-                                    newWp.Latitude.ToString("####0.00000000"),
-                                    newWp.Longitude.ToString("####0.00000000"),
-                                    newWp.Altitude,
-                                    newWp.Pitch,
-                                    newWp.Bank,
-                                    newWp.Heading,
-                                    (int)ahead_rate,
-                                    (int)alt_rate,
-                                    (int)pitch_rate,
-                                    (int)bank_rate,
-                                    (int)heading_rate,
-                                    newWp.GroundSpeed
-                                    ));
-
-                // send the actual slew adjustments
-
-                simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
-                                    SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_AHEAD_SET,
-                                    ahead_rate,
-                                    GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                                    SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-
-                simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
-                                    SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_HEADING_SET,
-                                    heading_rate,
-                                    GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                                    SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-
-                simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
-                                    SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_ALT_SET,
-                                    alt_rate,
-                                    GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                                    SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-
-                simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
-                                    SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_BANK_SET,
-                                    bank_rate,
-                                    GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                                    SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-
-                simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
-                                    SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_PITCH_SET,
-                                    pitch_rate,
-                                    GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                                    SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-
+                ResetRates(AIAircraft);
             }
+            else
+            {
+                CalculateSlewAI(AIAircraft, currentWp, newWp);
+            }
+        }
+
+        private void CalculateSlewAI(AIPlane AIAircraft, Waypoint currentWp, Waypoint newWp)
+        {
+            var period = AIAircraft.RemainingSecondsUntilTarget;
+            AIAircraft.RemainingSecondsUntilTarget --;
+            bool onGround = currentWp.OnGround && Math.Abs(currentWp.Altitude - newWp.Altitude) < 10;
+          
+            AIAircraft.SlowingDownForParkingMode = currentWp.GroundSpeed > 0 && newWp.GroundSpeed == 0 && onGround;
+            double periodCorrectionForParking = period > 1 && AIAircraft.SlowingDownForParkingMode ? -1.0 : 0;
+
+            Logger.Debug(string.Format("{0} SlowingDownForParkingMode: {1}, periodCorrectionForParking: {2}", AIAircraft.Callsign, periodCorrectionForParking, AIAircraft.SlowingDownForParkingMode));
+
+            // now calculate steering deltas based on predict point
+
+            double bearing_to_wp = SimMath.bearing(currentWp.Latitude, currentWp.Longitude,
+                                           newWp.Latitude, newWp.Longitude);
+
+            uint heading_rate = 0;
+
+            uint ahead_rate = SimMath.slew_ahead_rate(currentWp.Latitude, currentWp.Longitude,
+                                          newWp.Latitude, newWp.Longitude,
+                                          period + periodCorrectionForParking);
+            //uint ahead_rate = SimMath.slew_ahead_rate_experimental(AIAircraft.Callsign, currentWp, newWp, period);
+
+            bool doFinalHardTurnBeforeParking = AIAircraft.SlowingDownForParkingMode && AIAircraft.RemainingSecondsUntilTarget == 1;
+            heading_rate = SimMath.slew_turn_rate(bearing_to_wp, currentWp.Heading, newWp.Heading, currentWp.GroundSpeed, doFinalHardTurnBeforeParking);
+
+            if (SimMath.AIAircraftIsPushingBack(currentWp, newWp, heading_rate))
+            {
+                Logger.Debug(string.Format("{0} assuming pushback, old bearing: {1}", AIAircraft.Callsign, bearing_to_wp));
+
+                // Hard turn with low real GS, probably a pushback
+                bearing_to_wp = SimMath.bearing(newWp.Latitude, newWp.Longitude,
+                                           currentWp.Latitude, currentWp.Longitude);
+                heading_rate = SimMath.slew_turn_rate(bearing_to_wp, currentWp.Heading, newWp.Heading, currentWp.GroundSpeed, doFinalHardTurnBeforeParking);
+                ahead_rate = ((uint)-(int)ahead_rate);
+               
+            }
+          
+
+            double speed = SimMath.distance(currentWp.Latitude, currentWp.Longitude, newWp.Latitude, newWp.Longitude) / (period + periodCorrectionForParking);
+            var desiredHdg = SimMath.desired_heading(bearing_to_wp, newWp.Heading, doFinalHardTurnBeforeParking ? 0.9 : 0.1);
+            Logger.Debug(string.Format("Period: {0}  speed: {1}   ahead rt: {2}  bearing: {3} ({5})  desired heading: {4} ({6})", period, speed, SimMath.slew_ahead_to_rate(speed), bearing_to_wp, desiredHdg, RadianToDegree(bearing_to_wp), RadianToDegree(desiredHdg)));
+            
+            
+           
+             /*
+            uint ahead_rate = SimMath.slew_ahead_rate_experimental(AIAircraft.Callsign, currentWp, newWp, period);
+            if (Math.Abs((int)ahead_rate) > 16384)
+            {
+            }*/
+            
+            // On ground, and not on the way up or down? ignore pitch + bank
+
+            uint bank_rate = onGround ? 0 : SimMath.slew_rotation_to_rate((newWp.Bank - currentWp.Bank) / period, currentWp.GroundSpeed);
+
+            uint pitch_rate = onGround ? 0 : SimMath.slew_rotation_to_rate((newWp.Pitch - currentWp.Pitch) / period, currentWp.GroundSpeed);
+
+            uint alt_rate = SimMath.slew_alt_to_rate(SimMath.ft2m((currentWp.Altitude - newWp.Altitude)) / period);
+
+
+            Logger.Debug(string.Format("CURRENT WP: La {0}, Lo {1}, Alt {2}, Pi {3}, Ba {4}, Hdg {5} ({7}), GS: {6}",
+                               currentWp.Latitude.ToString("0000.00000000"),
+                               currentWp.Longitude.ToString("0000.00000000"),
+                               currentWp.Altitude.ToString("00000"),
+                               currentWp.Pitch.ToString("0000.00000000"),
+                               currentWp.Bank.ToString("0000.00000000"),
+                               currentWp.Heading.ToString("0000.00000000"),
+                               currentWp.GroundSpeed.ToString("000.0000"),
+                               RadianToDegree(currentWp.Heading)
+                               ));
+
+            Logger.Debug(string.Format("NEW WP    : La {0}, Lo {1}, Alt {2}, Pi {3}, Ba {4}, Hdg {5} ({11}), GS {11}, Ahead rt {6}, Alt rt {7}, Pi rt {8}, Ba rt {9}, Hdg rt {10}",
+                                newWp.Latitude.ToString("0000.00000000"),
+                                newWp.Longitude.ToString("0000.00000000"),
+                                newWp.Altitude.ToString("00000"),
+                                newWp.Pitch.ToString("0000.00000000"),
+                                newWp.Bank.ToString("0000.00000000"),
+                                newWp.Heading.ToString("0000.00000000"),
+                                (int)ahead_rate,
+                                (int)alt_rate,
+                                (int)pitch_rate,
+                                (int)bank_rate,
+                                (int)heading_rate,
+                                newWp.GroundSpeed.ToString("000.0000"),
+                                RadianToDegree(newWp.Heading)
+                                ));
+            
+            
+
+            // send the actual slew adjustments
+
+            if (speed <= MAX_SPEED_BEFORE_WARP)
+            {
+                TransmitSlewEvents(AIAircraft, heading_rate, ahead_rate, bank_rate, pitch_rate, alt_rate);
+                if(onGround)
+                {
+                    AIAltAboveGroundStruct s = new AIAltAboveGroundStruct() { altAboveGround = 0 };
+                    // simconnect.SetDataOnSimObject(DEFINITIONS.AISetAltAboveGroundStruct, AIAircraft.SimConnectObjectId, SIMCONNECT_DATA_SET_FLAG.DEFAULT, s); 
+                }
+            }
+            else
+                MoveAI(AIAircraft, newWp);
 
             // send gear up/down as necessary
             // TODO: ai_gear(ai_index, i, pos);
         }
 
+    
+
+        private void MoveAI(AIPlane AIAircraft, Waypoint newWp)
+        {
+            simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
+                                SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_AHEAD_SET,
+                                0,
+                                GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                                SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+
+            var aimove = new AIMoveStruct()
+            {
+                latitude = newWp.Latitude,
+                longitude = newWp.Longitude,
+                truealtitude = newWp.Altitude,
+                pitch = newWp.Pitch,
+                bank = newWp.Bank,
+                heading = newWp.Heading,
+                
+            };
+
+            Logger.Trace(AIAircraft.Callsign +  " doing WARP SPEED");
+            simconnect.SetDataOnSimObject(DEFINITIONS.AIMoveStruct, AIAircraft.SimConnectObjectId, SIMCONNECT_DATA_SET_FLAG.DEFAULT, aimove);
+        }
+
+        private void TransmitSlewEvents(AIPlane AIAircraft, uint heading_rate, uint ahead_rate, uint bank_rate, uint pitch_rate, uint alt_rate)
+        {
+            simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
+                                SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_AHEAD_SET,
+                                ahead_rate,
+                                GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                                SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+
+            simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
+                                SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_HEADING_SET,
+                                heading_rate,
+                                GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                                SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+
+            simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
+                                SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_ALT_SET,
+                                alt_rate,
+                                GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                                SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+
+            simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
+                                SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_BANK_SET,
+                                bank_rate,
+                                GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                                SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+
+            simconnect.TransmitClientEvent(AIAircraft.SimConnectObjectId,
+                                SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_PITCH_SET,
+                                pitch_rate,
+                                GROUP_PRIORITIES.SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                                SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+        }
+
+        private void ResetRates(AIPlane AIAircraft)
+        {
+            TransmitSlewEvents(AIAircraft, 0, 0, 0, 0, 0);
+        }
+
        
 
-        private static Waypoint CreateWaypointFromPositionReportStruct(ref AIPositionReportStruct aiposreport, DateTime timestamp)
+        private static Waypoint CreateWaypointFromAIPositionReportStruct(ref AIPositionReportStruct aiposreport, DateTime timestamp)
         {
             var currentWp = new Waypoint()
             {
-                Altitude = aiposreport.altitude,
+                Altitude = aiposreport.truealtitude,
                 Longitude = aiposreport.longitude,
                 Latitude = aiposreport.latitude,
-                GroundSpeed = aiposreport.groundspeed, 
+                GroundSpeed = SimMath.knotsToMetersPerSecond(aiposreport.groundspeed), 
                 Pitch = aiposreport.pitch,
                 Bank = aiposreport.bank,
                 Heading = aiposreport.heading, 
-                Timestamp = timestamp
+                Timestamp = timestamp,
+                OnGround = aiposreport.simOnGround != 0
             };
             return currentWp;
         }
 
-        public static Waypoint CreateWaypointFromTrafficPositionReportMsg(TrafficPositionReportMessage msg, DateTime timestamp)
+        public static Waypoint CreateWaypointFromTrafficPositionReportMsg(TrafficPositionReportMessage msg)
         {
             var currentWp = new Waypoint()
             {
-                Altitude = msg.Altitude,
-                Bank = SimMath.deg2rad(msg.BankAngle),
+                Altitude = msg.TrueAltitude,
+                Bank = SimMath.deg2rad(-msg.BankAngle),
                 Heading = SimMath.deg2rad(msg.Heading),
                 Latitude = msg.Latitude,
                 Longitude = msg.Longitude,
-                Pitch = SimMath.deg2rad(msg.Pitch),
-                GroundSpeed = msg.Groundspeed,
-                Timestamp = timestamp 
+                Pitch = SimMath.deg2rad(-msg.Pitch),
+                GroundSpeed = SimMath.knotsToMetersPerSecond(msg.Groundspeed),
+                Timestamp = msg.ReceiveTime 
             };
             return currentWp;
         }
@@ -694,6 +814,7 @@ namespace VSPC.SimInterface
                 simconnect.AddToDataDefinition(DEFINITIONS.PositionReportStruct, "Plane Latitude", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 simconnect.AddToDataDefinition(DEFINITIONS.PositionReportStruct, "Plane Longitude", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 simconnect.AddToDataDefinition(DEFINITIONS.PositionReportStruct, "Plane Altitude", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simconnect.AddToDataDefinition(DEFINITIONS.PositionReportStruct, "Pressure Altitude", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 simconnect.AddToDataDefinition(DEFINITIONS.PositionReportStruct, "Ground Velocity", "knots", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 simconnect.AddToDataDefinition(DEFINITIONS.PositionReportStruct, "PLANE PITCH DEGREES", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 simconnect.AddToDataDefinition(DEFINITIONS.PositionReportStruct, "PLANE BANK DEGREES", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
@@ -710,9 +831,25 @@ namespace VSPC.SimInterface
                 simconnect.AddToDataDefinition(DEFINITIONS.AIPositionUpdateStruct, "Plane Pitch Degrees", "radians", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 simconnect.AddToDataDefinition(DEFINITIONS.AIPositionUpdateStruct, "PLANE BANK DEGREES", "radians", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 simconnect.AddToDataDefinition(DEFINITIONS.AIPositionUpdateStruct, "PLANE HEADING DEGREES TRUE", "radians", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simconnect.AddToDataDefinition(DEFINITIONS.AIPositionUpdateStruct, "SIM ON GROUND", "", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simconnect.AddToDataDefinition(DEFINITIONS.AIPositionUpdateStruct, "PLANE ALT ABOVE GROUND", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                
                 //simconnect.AddToDataDefinition(DEFINITIONS.PositionUpdateStruct, "TRANSPONDER CODE:1", "", SIMCONNECT_DATATYPE.INT32, 0.0f, SimConnect.SIMCONNECT_UNUSED);
 
                 simconnect.RegisterDataDefineStruct<AIPositionReportStruct>(DEFINITIONS.AIPositionUpdateStruct);
+
+                // define a data structure for moving AI
+                simconnect.AddToDataDefinition(DEFINITIONS.AIMoveStruct, "Plane Latitude", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simconnect.AddToDataDefinition(DEFINITIONS.AIMoveStruct, "Plane Longitude", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simconnect.AddToDataDefinition(DEFINITIONS.AIMoveStruct, "Plane Altitude", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simconnect.AddToDataDefinition(DEFINITIONS.AIMoveStruct, "Plane Pitch Degrees", "radians", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simconnect.AddToDataDefinition(DEFINITIONS.AIMoveStruct, "PLANE BANK DEGREES", "radians", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simconnect.AddToDataDefinition(DEFINITIONS.AIMoveStruct, "PLANE HEADING DEGREES TRUE", "radians", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simconnect.RegisterDataDefineStruct<AIMoveStruct>(DEFINITIONS.AIMoveStruct);
+
+
+                simconnect.AddToDataDefinition(DEFINITIONS.AISetAltAboveGroundStruct, "Plane alt above ground", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simconnect.RegisterDataDefineStruct<AIAltAboveGroundStruct>(DEFINITIONS.AISetAltAboveGroundStruct);
 
                 // catch a simobject data request
                 simconnect.OnRecvSimobjectData += new SimConnect.RecvSimobjectDataEventHandler(simconnect_OnRecvSimobjectData);
@@ -728,7 +865,7 @@ namespace VSPC.SimInterface
                 simconnect.MapClientEventToSimEvent(SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_BANK_SET, "AXIS_SLEW_BANK_SET");
                 simconnect.MapClientEventToSimEvent(SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_PITCH_SET, "AXIS_SLEW_PITCH_SET");
                 simconnect.MapClientEventToSimEvent(SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_AHEAD_SET, "AXIS_SLEW_AHEAD_SET");
-                
+                simconnect.MapClientEventToSimEvent(SIMCONNECT_EVENTS.EVENTID_SLEW_RESET, "SLEW_RESET");
             }
             catch (COMException ex)
             {
@@ -751,8 +888,23 @@ namespace VSPC.SimInterface
             handled = false;
             if (msg == SimConnectInterface.WM_USER_SIMCONNECT && simconnect != null)
             {
-                simconnect.ReceiveMessage();
-                handled = true;
+                try
+                {
+                    simconnect.ReceiveMessage();
+                }
+                catch (COMException e)
+                {
+                    if ((uint)e.ErrorCode == 0xC000020D)
+                    {
+                        Logger.Error("SimConnect connection reset");
+                        CloseConnection();
+                        broker.Publish(new FlightsimDisconnectedMessage());
+                    }
+                }
+                finally
+                {
+                    handled = true;
+                }
             }
 
             return (IntPtr)0;
@@ -802,27 +954,29 @@ namespace VSPC.SimInterface
 
         void simconnect_OnRecvSimobjectData(SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA data)
         {
-            switch ((SIMCONNECT_EVENTS)data.dwRequestID)
+            if(data.dwRequestID >= (uint)SIMCONNECT_EVENTS.EVENTID_POSITIONREPORT_FOR_AIUPDATE)
+                HandleAIPositionReport(data.dwObjectID, (AIPositionReportStruct)data.dwData[0]);
+            else
             {
-                case SIMCONNECT_EVENTS.EVENTID_POSITIONREPORT:
-                    var posreport = (PositionReportStruct)data.dwData[0];
-                    var positionReportMsg = new PositionReportMessage()
-                    {
-                        Altitude = posreport.altitude,
-                        Longitude = posreport.longitude,
-                        Latitude = posreport.latitude,
-                        Groundspeed = posreport.groundspeed,
-                        Pitch = -posreport.pitch,
-                        Bank = -posreport.bank,
-                        Heading = posreport.heading,
-                    };
-                    broker.Publish(positionReportMsg);
-                    break;
-                case SIMCONNECT_EVENTS.EVENTID_POSITIONREPORT_FOR_AIUPDATE:
-                    CalculateSlewAI(data.dwObjectID, (AIPositionReportStruct)data.dwData[0]);
-                    break;
+                switch ((SIMCONNECT_EVENTS)data.dwRequestID)
+                {
+                    case SIMCONNECT_EVENTS.EVENTID_POSITIONREPORT:
+                        var posreport = (PositionReportStruct)data.dwData[0];
+                        var positionReportMsg = new PositionReportMessage()
+                        {
+                            TrueAltitude = posreport.truealtitude,
+                            PressureAltitude = posreport.pressurealtitude,
+                            Longitude = posreport.longitude,
+                            Latitude = posreport.latitude,
+                            Groundspeed = posreport.groundspeed,
+                            Pitch = -posreport.pitch,
+                            Bank = -posreport.bank,
+                            Heading = posreport.heading,
+                        };
+                        broker.Publish(positionReportMsg);
+                        break;
+                }
             }
-
         }
 
 
@@ -856,8 +1010,9 @@ namespace VSPC.SimInterface
                 CallsignToAIPlaneMap[callsign].SimConnectObjectId = data.dwObjectID;
 
                 // Set AI plane in slew mode and subscribe to 1 second pos.reps
+                simconnect.AIReleaseControl(planeObjectId, SIMCONNECT_EVENTS.EVENTID_AIRELEASEATC);
                 simconnect.TransmitClientEvent(planeObjectId, SIMCONNECT_EVENTS.EVENTID_SLEW_ON, 1, null, SIMCONNECT_EVENT_FLAG.DEFAULT);
-                simconnect.RequestDataOnSimObject(SIMCONNECT_EVENTS.EVENTID_POSITIONREPORT_FOR_AIUPDATE, DEFINITIONS.AIPositionUpdateStruct, planeObjectId, SIMCONNECT_PERIOD.SECOND, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 1, 0);
+                simconnect.RequestDataOnSimObject((SIMCONNECT_EVENTS)((uint)SIMCONNECT_EVENTS.EVENTID_POSITIONREPORT_FOR_AIUPDATE + aicounter), DEFINITIONS.AIPositionUpdateStruct, planeObjectId, SIMCONNECT_PERIOD.SECOND, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 1, 0);
                 AICounterToCallsignMap.Remove(aicounter);
             }
         }

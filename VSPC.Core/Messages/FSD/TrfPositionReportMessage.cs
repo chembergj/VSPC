@@ -13,10 +13,12 @@ namespace VSPC.Core.Messages.FSD
     {
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-        public double Altitude { get; set; }
+        public double TrueAltitude { get; set; }
+        public double PressureAltitude { get; set; }
         public double Groundspeed { get; set; }
         public double Heading { get; set; }
         public double BankAngle { get; set; }
         public int Pitch { get; set; }
+        public DateTime ReceiveTime { get; set; }
     }
 }

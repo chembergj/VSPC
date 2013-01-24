@@ -12,6 +12,8 @@ namespace VSPC.UI.Developer
     /// </summary>
     public partial class MainWindow : Window, IVSPCMessageHandler
     {
+        public bool ScrollToNewestLog { get; set; }
+
         public class LogMessage
         {
             public string Level { get; set; }
@@ -50,7 +52,8 @@ namespace VSPC.UI.Developer
 
         public void Log(string level, string message)
         {
-            DoInUIThread(() => Logs.Add(new LogMessage() { Level = level, Message = message}));
+            var log = new LogMessage() { Level = level, Message = message}; 
+            DoInUIThread(() => { Logs.Add(log); if(ScrollToNewestLog) listviewLogs.ScrollIntoView(log); });
         }
     }
 }

@@ -12,8 +12,8 @@ namespace SimMathTest
         {
             var currentWp = new Waypoint() 
             {
-                Latitude = 47.43135000,
-                Longitude = -122.30805000,
+                Latitude = 47.43426034,
+                Longitude = -122.30855984,
                 Bank = 0,
                 Altitude = 437.408073162284,
                 Pitch = -0.00349065847694874,
@@ -23,8 +23,8 @@ namespace SimMathTest
 
             var newWp = new Waypoint() 
             {
-                Latitude = 47.43140000,
-                Longitude = -122.30806000,
+                Latitude = 47.43426000,
+                Longitude = -122.30856000,
                 Bank = 0,
                 Altitude = 436,
                 Pitch = 0.0174532925199433,
@@ -32,10 +32,12 @@ namespace SimMathTest
                 GroundSpeed = 8
             };
 
+            double distance = SimMath.distance(currentWp.Latitude, currentWp.Longitude, newWp.Latitude, newWp.Longitude);
+
             double bearing_to_wp = SimMath.bearing(currentWp.Latitude, currentWp.Longitude,
                                                newWp.Latitude, newWp.Longitude);
 
-            uint heading_rate = SimMath.slew_turn_rate(bearing_to_wp, currentWp.Heading, newWp.Heading);
+            uint heading_rate = SimMath.slew_turn_rate(bearing_to_wp, currentWp.Heading, newWp.Heading, currentWp.GroundSpeed, false);
 
             var period = (newWp.Timestamp - currentWp.Timestamp).TotalSeconds;
 
@@ -43,9 +45,9 @@ namespace SimMathTest
                                            newWp.Latitude, newWp.Longitude,
                                            period);
 
-            uint bank_rate = SimMath.slew_rotation_to_rate((newWp.Bank - currentWp.Bank) / period);
+            uint bank_rate = SimMath.slew_rotation_to_rate((newWp.Bank - currentWp.Bank) / period, currentWp.GroundSpeed);
 
-            uint pitch_rate = SimMath.slew_rotation_to_rate((newWp.Pitch - currentWp.Pitch) / period);
+            uint pitch_rate = SimMath.slew_rotation_to_rate((newWp.Pitch - currentWp.Pitch) / period, currentWp.GroundSpeed);
 
             uint alt_rate = SimMath.slew_alt_to_rate((currentWp.Altitude - newWp.Altitude) / period);
 
