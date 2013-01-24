@@ -179,20 +179,11 @@ namespace VSPC.UI.WPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Airline:.
+        ///   Looks up a localized string similar to Airline callsign, e.g. NAX, SAS or DLH.
         /// </summary>
         public static string Options_AI_Airline {
             get {
                 return ResourceManager.GetString("Options_AI_Airline", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to (ex. &apos;NAX&apos;, &apos;SAS&apos;, &apos;DLH&apos;).
-        /// </summary>
-        public static string Options_AI_AirlineExample {
-            get {
-                return ResourceManager.GetString("Options_AI_AirlineExample", resourceCulture);
             }
         }
         
@@ -215,7 +206,7 @@ namespace VSPC.UI.WPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Model:.
+        ///   Looks up a localized string similar to (ex. &apos;Beech King Air 350 Paint1&apos;).
         /// </summary>
         public static string Options_AI_Model {
             get {
@@ -224,29 +215,11 @@ namespace VSPC.UI.WPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to (ex. &apos;Beech King Air 350 Paint1&apos;).
-        /// </summary>
-        public static string Options_AI_ModelExample {
-            get {
-                return ResourceManager.GetString("Options_AI_ModelExample", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Plane type:.
+        ///   Looks up a localized string similar to Aircraft type designator, e.g. A320, B738 or MD82.
         /// </summary>
         public static string Options_AI_Planetype {
             get {
                 return ResourceManager.GetString("Options_AI_Planetype", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to (ex. &apos;B738&apos;,&apos;C172&apos;).
-        /// </summary>
-        public static string Options_AI_PlanetypeExample {
-            get {
-                return ResourceManager.GetString("Options_AI_PlanetypeExample", resourceCulture);
             }
         }
         

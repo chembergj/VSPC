@@ -14,6 +14,7 @@
 			<Setter Property="Margin" Value="5,5,0,0"/>
 			<Setter Property="Height" Value="20"/>
 		</Style>
+		<CollectionViewSource x:Name="rulesCollectionView" Source="{Binding Source={x:Static c:AIModelRuleRepository.AllRules}}"   x:Key="rulesDataView" />
 	</Window.Resources>
 	<Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 		<Grid.ColumnDefinitions>
@@ -55,23 +56,26 @@
 
 				</Grid>
 			</TabItem>
-			<TabItem Name="tabAIModel" Header="{x:Static prop:Resources.Options_AI_Header}">
+			<TabItem Name="tabAIModel" Header="{x:Static prop:Resources.Options_AI_Header}" Loaded="tabAIModel_Loaded">
 				<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="Auto"></RowDefinition>
 						<RowDefinition Height="*"></RowDefinition>
 						<RowDefinition Height="Auto"></RowDefinition>
 						<RowDefinition Height="Auto"></RowDefinition>
-						<RowDefinition Height="Auto"></RowDefinition>
-						<RowDefinition Height="Auto"></RowDefinition>
 					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*"></ColumnDefinition>
-						<ColumnDefinition Width="*"></ColumnDefinition>
-						<ColumnDefinition Width="Auto"></ColumnDefinition>
+						<ColumnDefinition ToolTip="{x:Static prop:Resources.Options_AI_Airline}" Width="*"></ColumnDefinition>
+						<ColumnDefinition ToolTip="{x:Static prop:Resources.Options_AI_Planetype}" Width="*"></ColumnDefinition>
+						<ColumnDefinition ToolTip="{x:Static prop:Resources.Options_AI_Model}" Width="Auto"></ColumnDefinition>
 					</Grid.ColumnDefinitions>
 					<TextBlock Text="{x:Static prop:Resources.Options_AI_Listheader}" Margin="5,5,0,0" Grid.Row="0"/>
-					<DataGrid ItemsSource="{Binding Source={x:Static c:AIModelRuleRepository.AllRules}}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  x:Name="dataGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,5,5,5" AutoGenerateColumns="False">
+					<TextBox x:Name="tbSearch" Grid.Row="0" Grid.Column="1" Width="120" HorizontalAlignment="Right" Margin="0,0,5,0" />
+					<Button Click="ButtonSearch_Click" Grid.Column="2" Grid.Row="0" Height="Auto" >
+						<Image Width="16" Height="16" Source="Images/Find_VS.png"/>
+					</Button>
+
+					<DataGrid ItemsSource="{Binding Source={StaticResource rulesDataView}}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  x:Name="dataGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,5,5,5" AutoGenerateColumns="False">
 						<DataGrid.Columns>
 							<DataGridTextColumn Header="Airline" Binding="{Binding Airline}"  MinWidth="100" />
 							<DataGridTextColumn Header="Plane type" Binding="{Binding PlaneType}" MinWidth="100" />
@@ -96,31 +100,12 @@
 							</Button.Content>
 						</Button>
 					</Grid>
-					<Button HorizontalAlignment="Right"  Width="100" Grid.Row="2" Grid.Column="0" Margin="0,0,10,0" Content="{x:Static prop:Resources.Buttons_New}" Click="ButtonNewAIRule_Click" />
-					<Button HorizontalAlignment="Left" Width="100" Content="{x:Static prop:Resources.Buttons_Delete}" Grid.Row="2" Grid.Column="1" Margin="10,0,0,0" Click="Button_DeleteAIRuleClick" />
-					<Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,0,0">
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="150" />
-							<ColumnDefinition Width="*"/>
-							<ColumnDefinition Width="Auto"/>
-						</Grid.ColumnDefinitions>
-						<Grid.RowDefinitions>
-							<RowDefinition/>
-							<RowDefinition/>
-							<RowDefinition/>
-							<RowDefinition/>
-						</Grid.RowDefinitions>
-						<TextBlock Text="{x:Static prop:Resources.Options_AI_Airline}" Grid.Row="0" Grid.Column="0" Margin="5,5,0,0"></TextBlock>
-						<TextBox Name="textboxAirline" Margin="5,5,5,5" Grid.Row="0" Grid.Column="1"/>
-						<TextBlock Text="{x:Static prop:Resources.Options_AI_AirlineExample}" Margin="5,5,5,5" Grid.Row="0" Grid.Column="2" />
-						<TextBlock Text="{x:Static prop:Resources.Options_AI_Planetype}" Grid.Row="1" Grid.Column="0" Margin="5,5,0,0"/>
-						<TextBox Name="textboxPlaneType" Margin="5,5,5,5" Grid.Row="1" Grid.Column="1"/>
-						<TextBlock Text="{x:Static prop:Resources.Options_AI_PlanetypeExample}" Margin="5,5,5,5" Grid.Row="1" Grid.Column="2"/>
-						<TextBlock Text="{x:Static prop:Resources.Options_AI_Model}" Grid.Row="2" Grid.Column="0" Margin="5,5,0,0"/>
-						<TextBox Name="textboxModel" Grid.Row="2" Grid.Column="1" Margin="5,5,5,5"/>
-						<TextBlock Text="{x:Static prop:Resources.Options_AI_ModelExample}" Margin="5,5,5,10" Grid.Row="2" Grid.Column="2"/>
-						<TextBlock x:Name="tbRuleDescription" Margin="5,5,5,5" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3"/>
-					</Grid>
+					<StackPanel Orientation="Horizontal" Grid.Row="2" Grid.ColumnSpan="2">
+						<TextBlock Text="{x:Static prop:Resources.Options_AI_RuleDescription}" Margin="5,5,0,0"></TextBlock>
+						<TextBlock x:Name="tbRuleDescription" Text="{Binding Source={StaticResource rulesDataView}, Path=RuleDescription}" Margin="5,5,5,5"/>
+					</StackPanel>
+					<Button HorizontalAlignment="Right"  Width="100" Grid.Row="3" Grid.Column="0" Margin="0,0,10,0" Content="{x:Static prop:Resources.Buttons_New}" Click="ButtonNewAIRule_Click" />
+					<Button HorizontalAlignment="Left" Width="100" Content="{x:Static prop:Resources.Buttons_Delete}" Grid.Row="3" Grid.Column="1" Margin="10,0,0,0" Click="Button_DeleteAIRuleClick" />
 				</Grid>
 			</TabItem>
 		</TabControl>

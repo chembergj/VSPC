@@ -17,15 +17,7 @@ namespace VSPC.Common
 
 		public static ObservableCollection<AIModelRule> AllRules
 		{
-			get
-			{
-				if (rules == null)
-				{
-					rules = LoadRules();
-				}
-
-				return rules;
-			}
+			get { return rules ?? (rules = LoadRules()); }
 		}
 
 		private static ObservableCollection<AIModelRule> LoadRules()
@@ -54,6 +46,13 @@ namespace VSPC.Common
 				var xmlSerializer = new XmlSerializer(typeof(AIModelRuleCollection));
 				xmlSerializer.Serialize(XmlWriter.Create(filename), new AIModelRuleCollection() { Rules = rules });
 			}
+		}
+
+		public static AIModelRule FindNext(int from, string search)
+		{
+			return
+				AllRules.Skip(from).FirstOrDefault(
+					rule => rule.Airline.Contains(search) || rule.PlaneType.Contains(search) || rule.Model.Contains(search));
 		}
 	}
 

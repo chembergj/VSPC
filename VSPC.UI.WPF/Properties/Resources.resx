@@ -179,25 +179,16 @@
     <value>Delete</value>
   </data>
   <data name="Options_AI_Airline" xml:space="preserve">
-    <value>Airline:</value>
-  </data>
-  <data name="Options_AI_AirlineExample" xml:space="preserve">
-    <value>(ex. 'NAX', 'SAS', 'DLH')</value>
+    <value>Airline callsign, e.g. NAX, SAS or DLH</value>
   </data>
   <data name="Options_AI_Listheader" xml:space="preserve">
     <value>Prioritized list of rules for AI model matching:</value>
   </data>
   <data name="Options_AI_Model" xml:space="preserve">
-    <value>Model:</value>
-  </data>
-  <data name="Options_AI_ModelExample" xml:space="preserve">
     <value>(ex. 'Beech King Air 350 Paint1')</value>
   </data>
   <data name="Options_AI_Planetype" xml:space="preserve">
-    <value>Plane type:</value>
-  </data>
-  <data name="Options_AI_PlanetypeExample" xml:space="preserve">
-    <value>(ex. 'B738','C172')</value>
+    <value>Aircraft type designator, e.g. A320, B738 or MD82</value>
   </data>
   <data name="Options_AI_RuleDescription" xml:space="preserve">
     <value>Rule description:</value>

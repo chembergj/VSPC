@@ -119,6 +119,7 @@
     <Resource Include="Images\109_AllAnnotations_Error_16x16_72.png" />
     <Resource Include="Images\112_DownArrowShort_Blue_16x16_72.png" />
     <Resource Include="Images\112_UpArrowShort_Blue_16x16_72.png" />
+    <Resource Include="Images\Find_VS.png" />
     <Content Include="speaker.png" />
     <Content Include="Vatsim.png" />
     <Resource Include="weather_cloudy.png" />
