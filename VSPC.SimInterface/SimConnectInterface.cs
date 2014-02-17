@@ -78,7 +78,12 @@ namespace VSPC.SimInterface
             EVENTID_DEFINITION_AI_MOVE,
             EVENTID_SLEW_RESET,
 
-
+            // Light events
+            EVENTID_STROBES_ON,
+            EVENTID_TOGGLE_BEACON_LIGHTS,
+            EVENTID_TOGGLE_TAXI_LIGHTS,
+            EVENTID_TOGGLE_WING_LIGHTS,
+    
             EVENTID_SETAIAC = 100000,
 
             EVENTID_POSITIONREPORT_FOR_AIUPDATE = 200000
@@ -866,6 +871,10 @@ namespace VSPC.SimInterface
                 simconnect.MapClientEventToSimEvent(SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_PITCH_SET, "AXIS_SLEW_PITCH_SET");
                 simconnect.MapClientEventToSimEvent(SIMCONNECT_EVENTS.EVENTID_AXIS_SLEW_AHEAD_SET, "AXIS_SLEW_AHEAD_SET");
                 simconnect.MapClientEventToSimEvent(SIMCONNECT_EVENTS.EVENTID_SLEW_RESET, "SLEW_RESET");
+                simconnect.MapClientEventToSimEvent(SIMCONNECT_EVENTS.EVENTID_STROBES_ON, "STROBES_ON");
+                simconnect.MapClientEventToSimEvent(SIMCONNECT_EVENTS.EVENTID_TOGGLE_BEACON_LIGHTS, "TOGGLE_BEACON_LIGHTS");
+                simconnect.MapClientEventToSimEvent(SIMCONNECT_EVENTS.EVENTID_TOGGLE_TAXI_LIGHTS, "TOGGLE_TAXI_LIGHTS");
+                simconnect.MapClientEventToSimEvent(SIMCONNECT_EVENTS.EVENTID_TOGGLE_WING_LIGHTS, "TOGGLE_WING_LIGHTS");
             }
             catch (COMException ex)
             {
@@ -1012,6 +1021,10 @@ namespace VSPC.SimInterface
                 // Set AI plane in slew mode and subscribe to 1 second pos.reps
                 simconnect.AIReleaseControl(planeObjectId, SIMCONNECT_EVENTS.EVENTID_AIRELEASEATC);
                 simconnect.TransmitClientEvent(planeObjectId, SIMCONNECT_EVENTS.EVENTID_SLEW_ON, 1, null, SIMCONNECT_EVENT_FLAG.DEFAULT);
+                simconnect.TransmitClientEvent(planeObjectId, SIMCONNECT_EVENTS.EVENTID_STROBES_ON, 0, null, SIMCONNECT_EVENT_FLAG.DEFAULT);
+                simconnect.TransmitClientEvent(planeObjectId, SIMCONNECT_EVENTS.EVENTID_TOGGLE_BEACON_LIGHTS, 0, null, SIMCONNECT_EVENT_FLAG.DEFAULT);
+                simconnect.TransmitClientEvent(planeObjectId, SIMCONNECT_EVENTS.EVENTID_TOGGLE_TAXI_LIGHTS, 0, null, SIMCONNECT_EVENT_FLAG.DEFAULT);
+                simconnect.TransmitClientEvent(planeObjectId, SIMCONNECT_EVENTS.EVENTID_TOGGLE_WING_LIGHTS, 0, null, SIMCONNECT_EVENT_FLAG.DEFAULT);
                 simconnect.RequestDataOnSimObject((SIMCONNECT_EVENTS)((uint)SIMCONNECT_EVENTS.EVENTID_POSITIONREPORT_FOR_AIUPDATE + aicounter), DEFINITIONS.AIPositionUpdateStruct, planeObjectId, SIMCONNECT_PERIOD.SECOND, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 1, 0);
                 AICounterToCallsignMap.Remove(aicounter);
             }
